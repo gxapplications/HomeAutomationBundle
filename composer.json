@@ -1,0 +1,21 @@
+{
+    "name": "gxapplications/home-automation-bundle",
+    "license": "MIT",
+    "description": "Home Automation bundle to bring MyFox automation software",
+    "type": "project",
+    "homepage": "https://github.com/gxapplications/HomeAutomationBundle",
+    "keywords": ["angular", "material", "angularjs", "materialdesign", "myfox", "automation"],
+    "require": {
+        "php": ">=5.6.0",
+        "jms/security-extra-bundle" : "dev-master",
+        "jmose/command-scheduler-bundle" : "dev-master",
+        "electrolinux/phpquery" : "dev-master",
+        "ptachoire/cssembed" : "dev-master",
+        "gxapplications/angular-material-bundle" : "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "GXApplications\\HomeAutomationBundle\\": ""
+        }
+    }
+}
