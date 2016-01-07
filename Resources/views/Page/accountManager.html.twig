@@ -1,0 +1,171 @@
+{% extends "GXHomeAutomationBundle::base.html.twig" %}
+
+{% block title %}Home manager{% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets
+        'bundles/gxangularmaterial/css/patternLock.css'
+        'bundles/gxhomeautomation/css/main.css'
+        'bundles/gxhomeautomation/css/rubber.css'
+        'bundles/gxhomeautomation/css/animations.css'
+        filter='cssrewrite' %}
+	    <link rel="stylesheet" href="{{ asset_url }}" />
+	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{% javascripts
+	    '@GXHomeAutomationBundle/Resources/public/js/jquery-2.1.1.min.js'
+	    '@GXAngularMaterialBundle/Resources/public/js/patternLock.min.js'
+		filter='?closure' %}
+	    <script src="{{ asset_url }}"></script>
+	{% endjavascripts %}
+	<script>
+		angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
+	
+		// Apply default configurations
+		{{ include('GXHomeAutomationBundle::ng-config.js.twig') }}
+	
+		.controller("ManagerControls", function($scope, $http, $window, $mdBottomSheet, $mdToast) {
+			$scope.loading = true;
+			$scope.querying = false;
+			$scope.account = {
+				home_id: '', // home ID, not account ID!
+				pattern: '',
+				password: ''
+			};
+
+			$scope.goToUrl = function(url) {
+				$window.location.href = url;
+			};
+
+			// bottomSheet controls
+			$scope.showParameters = function($event) {
+				$mdBottomSheet.show({
+			      templateUrl: '{{ path('_md_admin_bottom_sheet') }}',
+			      controller: 'AdminBottomSheetCtrl',
+			      targetEvent: $event
+			    }).then(function(clickedItem) {  });
+			};
+
+			$scope.deleteHome = function($event) {
+				$http.post('{{ path("_md_admin_bottom_sheet") }}', {action_id: 'delete_home', home_id: $scope.account.home_id }).
+				  success(function(data, status, headers, config) {
+					  $window.location.href = '{{ path("_account_manager") }}'; // do a refresh
+				  }).
+				  error(function(data, status, headers, config) {
+					  $mdToast.show({
+				          template: "<md-toast><img src=\"{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_error.png') }}\" width=\"42\" height=\"42\" /> Error deleting Home!</md-toast>",
+				          hideDelay: 4000,
+				          position: 'top right'
+				      });
+				  });
+			};
+
+			var lock = new PatternLock('#patternHolder',{matrix:[3,3], onDraw: function(pattern) {
+				$scope.account.pattern = pattern;
+				$scope.$apply(); // force refresh of ng-disabled evaluation for form button
+			}});
+			$scope.changeHome = function() {
+				$scope.account.pattern = '';
+				$scope.account.password = '';
+				lock.reset();
+			};
+
+			$scope.changePass = function($event) {
+				$http.post('{{ path("_account_manager") }}', { update_pass: 1, account: $scope.account }).
+				  success(function(data, status, headers, config) {
+					  if (data == '1') $scope.changeHome();
+					  else
+						  $mdToast.show({
+					          template: "<md-toast><img src=\"{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_error.png') }}\" width=\"42\" height=\"42\" /> Error updating Home!</md-toast>",
+					          hideDelay: 4000,
+					          position: 'top right'
+					      });
+				  }).
+				  error(function(data, status, headers, config) {
+					  $mdToast.show({
+				          template: "<md-toast><img src=\"{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_error.png') }}\" width=\"42\" height=\"42\" /> Error updating Home!</md-toast>",
+				          hideDelay: 4000,
+				          position: 'top right'
+				      });
+				  });
+			};
+			
+			
+			$scope.$watch('$viewContentLoaded', function() {
+				$scope.loading = false;
+			});
+		})
+		
+		// Parameters bottom sheet controller
+		.controller('AdminBottomSheetCtrl', function($rootScope, $scope, $mdBottomSheet, $http, $window) {
+			$scope.items = [
+			    { name: 'Create home', icon: 'create', id: 'create' },
+			    { name: 'Logout', icon: 'logout', id: 'logout' },
+			];
+			
+			$scope.listItemClick = function($index) {
+				var clickedItem = $scope.items[$index];
+				
+				if (clickedItem.id == 'logout') {
+					$mdBottomSheet.hide(clickedItem);
+					$window.location.href = '{{ path("_home_logout") }}';
+				} else if (clickedItem.id == 'create') {
+					$mdBottomSheet.hide(clickedItem);
+					$window.location.href = '{{ path("_account_creation") }}';
+				} else {
+					
+				}
+			};
+		});
+		
+	</script>
+{% endblock %}
+
+{% block body %}
+
+<form name="managerForm" onsubmit="return false;" method="post" id="manager"
+		layout-gt-sm="row" layout="column" layout-align="center" layout-fill ng-controller="ManagerControls"
+		ng-show="!loading" class="opacity-animate-show ng-hide">
+	<div layout="column" layout-align="center">
+		<div layout-align="start" layout-fill layout-padding>
+			<div class="big-title">Manager</div>
+		</div>
+		<div layout="column" layout-align="center" layout-fill layout-padding class="login-rubber">
+			<span class="title">Home: </span>
+			
+			<md-radio-group ng-model="account.home_id">
+		      {% for home in homes %}
+		        <md-radio-button aria-label="{{ home.account.name }}" class="md-button md-raised"
+		      		ng-class="{ 'md-primary': (account.home_id == '{{ home.id }}') }"
+		      		value="{{ home.id }}" ng-click="changeHome()">{{ home.name }}</md-radio-button>
+		      {% endfor %}
+		    </md-radio-group>
+		    
+		    <md-button ng-click="goToUrl('{{ path("_account_creation") }}')">Create new</md-button>
+		</div>
+	</div>
+	<div layout="column" layout-align="center center" class="login-rubber-right">
+		<md-button style="width:100%;" aria-label="Delete"
+			ng-show="(account.home_id != '')" ng-click="deleteHome($event)">Delete Home</md-button>
+		
+		<span class="title" style="width:100%;margin-top:2em;" ng-show="(account.home_id != '')">Change password & pattern:</span>
+		<md-input-container style="width:100%" ng-show="(account.home_id != '')">
+      		<label>New password</label>
+      		<input ng-model="account.password" type="password" name="pattern">
+    	</md-input-container>
+		<div id="patternHolder" layout="horizontal" layout-align="center" layout-fill ng-show="(account.home_id != '')"> </div>
+		<md-button class="md-raised md-primary" style="width:100%;" aria-label="Validate"
+			ng-show="(account.home_id != '')" ng-click="changePass($event)"
+			ng-disabled="!managerForm.$valid || account.pattern=='' || account.password==''">Validate</md-button>
+	</div>
+	
+	<md-button class="md-fab md-hue-4 md-primary menu-button" aria-label="Menu" ng-click="showParameters($event)">
+		<img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_settings.png') }}" class="fab-button" />
+	</md-button>
+</form>
+
+
+
+{% endblock %}

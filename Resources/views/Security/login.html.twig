@@ -1,0 +1,147 @@
+{% extends "GXHomeAutomationBundle::base.html.twig" %}
+
+{% block title %}{% if from403 %}Home restricted access{% else %}Home login{% endif %}{% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets
+        'bundles/gxangularmaterial/css/patternLock.css'
+        'bundles/gxhomeautomation/css/main.css'
+        'bundles/gxhomeautomation/css/rubber.css'
+        'bundles/gxhomeautomation/css/animations.css'
+        filter='cssrewrite' %}
+	    <link rel="stylesheet" href="{{ asset_url }}" />
+	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{% javascripts
+	    '@GXHomeAutomationBundle/Resources/public/js/jquery-2.1.1.min.js'
+	    '@GXAngularMaterialBundle/Resources/public/js/patternLock.min.js'
+		filter='?closure' %}
+	    <script src="{{ asset_url }}"></script>
+	{% endjavascripts %}
+	<script>
+		angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
+	
+		// Apply default configurations
+		{{ include('GXHomeAutomationBundle::ng-config.js.twig') }}
+	
+		.controller("LoginControls", function($scope, $http, $window) {
+			$scope.loading = true;
+			$scope.querying = false;
+			$scope.login = {
+				pattern: "",
+				account_id: '{{ last_account_id }}',
+				home_id: '{{ last_home_id }}',
+				error: false,
+				admin_pwd_error: false,
+				pattern_error: false
+			};
+			var lock = new PatternLock('#patternHolder',{matrix:[3,3], onDraw: function(pattern) {
+				$scope.querying = true;
+				$scope.login.pattern = pattern;
+				$scope.$apply();
+				$scope.logNow();
+			}});
+			$scope.changeHome = function(home_id) {
+				$scope.login.home_id = home_id;
+				$scope.login.pattern = '';
+				$scope.login.admin_pwd_error = false;
+				$scope.login.error = false;
+				lock.reset();
+			};
+			
+			$scope.logNow = function() {
+			  $scope.querying = true;
+			  
+			  $http.post('{{ path("_home_security_check") }}',
+				{	_username: $scope.login.account_id,
+					_password: $scope.login.pattern,
+					_target_path: '/home/'+$scope.login.home_id
+				}).
+				success(function(data, status, headers, config) {
+					if (data.indexOf('ERR:') == 0) {
+						$scope.querying = false;
+						if (data == 'ERR:Invalid pattern') {
+							lock.error();
+							if ($scope.login.account_id == 'admin') $scope.login.admin_pwd_error = true;
+							else { 
+								$scope.login.error = false;
+								$scope.login.pattern_error = true;
+							}
+						}
+						if (data == 'ERR:Invalid account' || data == 'ERR:Myfox account password invalid.') {
+							$scope.login.pattern_error = false;
+							$scope.login.error = true;
+							lock.reset();
+						}
+					} else {
+						$window.location.href = '{{ path("_home") }}'+$scope.login.home_id;
+					}
+				});
+			  
+			};
+			
+			$scope.$watch('$viewContentLoaded', function() {
+				$scope.loading = false;
+			});
+		})
+	</script>
+{% endblock %}
+
+{% block body %}
+
+<form name="loginForm" action="{{ path("_home_security_check") }}" onsubmit="return false;" method="post" id="login"
+		layout-gt-sm="row" layout="column" layout-align="center" layout-fill ng-controller="LoginControls"
+		ng-show="!loading" class="opacity-animate-show ng-hide">
+	<div layout="column" layout-align="center">
+		<div layout-align="start" layout-fill layout-padding>
+			<div class="big-title">Authentication</div>
+		</div>
+		<div layout="column" layout-align="center" layout-fill layout-padding class="login-rubber">
+			<span class="title">Home: </span>
+			
+			<md-radio-group ng-model="login.account_id">
+		      {% for home in homes %}
+		        <md-radio-button aria-label="{{ home.account.name }}" class="md-button md-raised"
+		      		ng-class="{ 'md-primary': (login.account_id == '{{ home.account.id }}') }"
+		      		value="{{ home.account.id }}" ng-click="changeHome({{ home.id }})">{{ home.name }}</md-radio-button>
+		      {% endfor %}
+		      <md-radio-button value="admin" class="md-button md-raised" ng-click="changeHome('accountManager')"
+		      		ng-class="{ 'md-warn': (login.account_id == 'admin') }"><i>Administrator</i></md-radio-button>
+		    </md-radio-group>
+		</div>
+	</div>
+	<div layout="column" layout-align="center center" class="login-rubber-right">
+		<span class="title squize-opacity-animate-show" ng-show="(login.account_id != 'admin')">Pattern:</span>
+		<div class="squize-opacity-animate-show" id="patternHolder" layout="horizontal" layout-align="center" layout-fill ng-show="(login.account_id != 'admin')"> </div>
+
+		<div class="squize-opacity-animate-show" ng-show="(login.account_id == 'admin')">
+			<md-input-container>
+	      		<label>Password</label>
+	      		<input ng-model="login.pattern" type="password" required name="pattern">
+	    	</md-input-container>
+    	</div>
+		<br />
+		<md-button layout-fill class="md-raised md-primary squize-opacity-animate-show" ng-show="(login.account_id == 'admin')" ng-click="logNow()">Login</md-button>
+		{% if from403 %}
+			<span class="error"><br />This Home need different credentials. Please login again.</span>
+		{% endif %}
+		
+		<div ng-show="querying" layout="column" layout-align="center center" style="height:100px; margin-bottom:-90px;">
+			<md-progress-circular md-mode="indeterminate"></md-progress-circular>
+		</div>
+		<div ng-show="!querying" layout="column" layout-align="center center" style="height:100px; margin-bottom:-90px;">
+			<span class="error squize-opacity-animate-show" ng-show="login.admin_pwd_error">Invalid password!</span>
+			<span class="error squize-opacity-animate-show" ng-show="login.pattern_error">Invalid pattern!</span>
+			<span class="error squize-opacity-animate-show" style="text-align: center;" ng-show="login.error">
+				Invalid Myfox account!
+				<br />
+				Please check your credentials.
+			</span>
+		</div>
+		
+	</div>
+</form>
+ 
+{% endblock %}

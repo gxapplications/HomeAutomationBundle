@@ -1,0 +1,154 @@
+<md-dialog class="component_edit_dialog" aria-label="Component parameters">
+  <md-content>
+  	<form name="componentForm" ng-init="component.id={{ component.id }}">
+  		<fieldset class="md-whiteframe-z1 lighter" layout="column">
+  			<legend>Scenario Activation</legend>
+  			<div layout="row" layout-align="start center">
+		  		<md-input-container flex class="very_long">
+		      		<label>Title</label>
+		      		<input ng-model="component.title" required name="component_title" md-maxlength="98"
+		      			ng-init="component.title='{{ component.title|replace({'\'':'\\\''}) }}'" />
+		    	</md-input-container>
+		    	<div>
+		    		TODO !8: icon support
+		    	</div>
+		    </div>
+	  		<md-input-container class="very_long">
+	      		<label>Description</label>
+	      		<input ng-model="component.description" md-maxlength="98"
+	      			ng-init="component.description='{{ component.description|replace({'\'':'\\\''}) }}'" />
+	    	</md-input-container>
+	    	
+	    	<br/>
+	    	<div layout="row" layout-align="start center">
+	    		<div flex>
+			    	<label>Linked to scenario: </label><br/>
+					<select id="edit_scenario_activation_{{ component.id }}_scenario_id" ng-model="component.scenario_id"
+						ng-init="component.scenario_id='{{ component.getForeignId1 }}'" label="Scenario">
+						{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+					  		<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+					  	{% endfor %}
+					</select>
+				</div>
+				<md-input-container flex>
+			        <label>Delayed play action (in minutes)</label>
+			        <input required type="number" step="any" name="component_delay" ng-model="component.delay" min="0" max="1440" required
+			        	ng-init="component.delay={{ component.getDelay1 }}">
+			        <div ng-messages="componentForm.component_delay.$error">
+			          <div ng-message="required">If you want immediate play action, please indicate 0.</div>
+			          <div ng-message="min">Impossible to go back in time, Marty!</div>
+			          <div ng-message="max">1440 minutes max. Equivalent to 24hrs.</div>
+			        </div>
+			    </md-input-container>
+			</div>
+  		</fieldset>
+  		
+  		<br/>
+  		<fieldset class="md-whiteframe-z1 darker" layout="column" style="margin-bottom:8px;">
+  			<legend>Options</legend>
+  			<div layout="row" layout-align="start center">
+		  		<md-input-container flex class="very_long">
+		      		<label>Title #2</label>
+		      		<input ng-model="component.title_2" name="component_title_2" md-maxlength="98"
+		      			ng-init="component.title_2='{{ component.title2|replace({'\'':'\\\''}) }}'" />
+		    	</md-input-container>
+		    	<div>
+		    		TODO !8: icon support
+		    	</div>
+		    </div>
+		    <div layout="row" layout-align="start center">
+		    	<md-input-container flex class="very_long">
+			  		<label>Description #2</label>
+		      		<input ng-model="component.description_2" md-maxlength="98"
+		      			ng-init="component.description_2='{{ component.description2|replace({'\'':'\\\''}) }}'" />
+	      		</md-input-container>
+	      		<div>
+			    	<label>Linked to scenario: </label><br/>
+					<select id="edit_scenario_activation_{{ component.id }}_scenario_id_2" ng-model="component.scenario_id_2"
+						ng-init="component.scenario_id_2='{{ component.getForeignId2 }}'" label="Scenario #2">
+						{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+					  		<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+					  	{% endfor %}
+					</select>
+				</div>
+		    </div>
+		</fieldset>
+  		<fieldset class="md-whiteframe-z1 darker" layout="column" style="margin-bottom:8px;">
+		    <div layout="row" layout-align="start center">
+		  		<md-input-container flex class="very_long">
+		      		<label>Title #3</label>
+		      		<input ng-model="component.title_3" name="component_title_3" md-maxlength="98"
+		      			ng-init="component.title_3='{{ component.title3|replace({'\'':'\\\''}) }}'" />
+		    	</md-input-container>
+		    	<div>
+		    		TODO !8: icon support
+		    	</div>
+		    </div>
+		    <div layout="row" layout-align="start center">
+		    	<md-input-container flex class="very_long">
+			  		<label>Description #3</label>
+		      		<input ng-model="component.description_3" md-maxlength="98"
+		      			ng-init="component.description_3='{{ component.description2|replace({'\'':'\\\''}) }}'" />
+	      		</md-input-container>
+	      		<div>
+			    	<label>Linked to scenario: </label><br/>
+					<select id="edit_scenario_activation_{{ component.id }}_scenario_id_3" ng-model="component.scenario_id_3"
+						ng-init="component.scenario_id_3='{{ component.getForeignId3 }}'" label="Scenario #3">
+						{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+					  		<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+					  	{% endfor %}
+					</select>
+				</div>
+		    </div>
+		</fieldset>
+  		<fieldset class="md-whiteframe-z1 darker" layout="column">
+		    <div layout="row" layout-align="start center">
+		  		<md-input-container flex class="very_long">
+		      		<label>Title #4</label>
+		      		<input ng-model="component.title_4" name="component_title_4" md-maxlength="98"
+		      			ng-init="component.title_4='{{ component.title4|replace({'\'':'\\\''}) }}'" />
+		    	</md-input-container>
+		    	<div>
+		    		TODO !8: icon support
+		    	</div>
+		    </div>
+		    <div layout="row" layout-align="start center">
+		    	<md-input-container flex class="very_long">
+			  		<label>Description #4</label>
+		      		<input ng-model="component.description_4" md-maxlength="98"
+		      			ng-init="component.description_4='{{ component.description4|replace({'\'':'\\\''}) }}'" />
+	      		</md-input-container>
+	      		<div>
+			    	<label>Linked to scenario: </label><br/>
+					<select id="edit_scenario_activation_{{ component.id }}_scenario_id_4" ng-model="component.scenario_id_4"
+						ng-init="component.scenario_id_4='{{ component.getForeignId4 }}'" label="Scenario #4">
+						{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+					  		<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+					  	{% endfor %}
+					</select>
+				</div>
+		    </div>
+	  	</fieldset>
+	  	<fieldset class="md-whiteframe-z1 darker" layout="column">
+		    <div flex>
+		  		<md-radio-group ng-model="component.option"
+			  			ng-init="component.option={{ component.getOption1 }}">
+					<md-radio-button value="0">Scenarii are independent.</md-radio-button>
+					<md-radio-button value="1">Exactly one scenario must be activated on the same time.</md-radio-button>
+					<md-radio-button value="2">At most one scenario can be activated on the same time.</md-radio-button>
+				</md-radio-group>
+		    </div>
+	  	</fieldset>
+	  	
+	  	
+	  	<br/>
+		TODO !9: Balance inverse apres Y minutes
+	  	
+  	</form>
+  </md-content>
+  <div class="md-actions" layout="row">
+    <span flex></span>
+    <md-button ng-click="cancel()">Cancel</md-button>
+    <md-button ng-click="save()" class="md-primary md-raised">Save</md-button>
+  </div>
+</md-dialog>

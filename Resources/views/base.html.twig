@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>{% block title %}Welcome to GX Home Automation default page{% endblock %}</title>
+        
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+        
+        {% stylesheets
+        	'bundles/gxangularmaterial/css/angular-material.min.css'
+        	filter='cssrewrite' %}
+		    <link rel="stylesheet" href="{{ asset_url }}" />
+		{% endstylesheets %}
+    	
+        {% block stylesheets %}{% endblock %}
+        
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    </head>
+    <body ng-app="GXHomeAutomationApp">
+    
+		{% block body %}{% endblock %}
+
+		{% javascripts
+		    '@SunraAngularBundle/Resources/public/js/angular/angular-1.3.3/angular.min.js'
+		    '@SunraAngularBundle/Resources/public/js/angular/angular-1.3.3/angular-animate.min.js'
+		    '@SunraAngularBundle/Resources/public/js/angular/angular-1.3.3/angular-route.min.js'
+		    '@SunraAngularBundle/Resources/public/js/angular/angular-1.3.3/angular-aria.min.js'
+		    '@SunraAngularBundle/Resources/public/js/angular/angular-1.3.3/angular-messages.min.js'
+		    '@SunraAngularBundle/Resources/public/js/angular/angular-1.3.3/angular.min.js'
+		    '@SunraAngularBundle/Resources/public/js/thirdparty/angular-local-storage/angular-local-storage.js'
+		    '@SunraAngularBundle/Resources/public/js/thirdparty/angular-ui/bootstrap/bootstrap-gh-pages/ui-bootstrap-0.11.0.min.js'
+		    
+			'@GXAngularMaterialBundle/Resources/public/js/hammer.min.js'
+			'@GXAngularMaterialBundle/Resources/public/js/angular-material.min.js' %}
+		    <script src="{{ asset_url }}"></script>
+		{% endjavascripts %}
+
+        {% block javascripts %}{% endblock %}
+        
+    </body>
+</html>

@@ -1,0 +1,201 @@
+angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
+
+// Apply default configurations
+{{ include('GXHomeAutomationBundle::ng-config.js.twig') }}
+
+// Header controller
+.controller("HeaderControls", function($rootScope, $scope, $timeout, $mdBottomSheet, $mdToast, $http, $mdDialog) {
+	$scope.loading = true;
+	
+	// urls
+	var commit_url = "{{ path('_home_page_commit', { 'page_id': page.id }) }}";
+	var remove_component_url = "{{ path('_component_remove', { 'page_id': page.id }) }}";
+	var set_sync_myfox_url = "{{ path('_set_sync_myfox') }}";
+	var set_alarm_status_myfox_url = "{{ path('_set_alarm_status_myfox') }}";
+	
+	// layouts list
+	$scope.layouts = [
+	  {% for layout in layouts %}
+	  	{name:'{{layout.name}}', columns:'{{layout.cols}}', id:'{{layout.id}}'},
+	  {% endfor %}
+    ];
+    $scope.justChanged = function($event) {
+    	$rootScope.$broadcast('LayoutChange', $scope.layout);
+	};
+	
+	// models
+	$scope.page = {
+		name: "{{page.name}}"
+	};
+	$scope.alarm = {
+		status: "{{alarm_status}}"
+	};
+	$scope.layout = $scope.layouts[{{layout}}];
+	
+	// editMode event creation
+   	$scope.editMode = false;
+	$scope.toggleEditMode = function($event) {
+		$scope.editMode = !$scope.editMode;
+		$rootScope.$broadcast('editModeChange', $scope.editMode);
+	};
+	$scope.$on('editModeChange', function(event, editMode) {
+	    $scope.editMode = editMode;
+	    if (!editMode) {
+			$http.post(commit_url, {page: $scope.page}).
+			  success(function(data, status, headers, config) {
+				  // nothing to do now...
+			  }).
+			  error(function(data, status, headers, config) {
+			    $rootScope.$broadcast('CommitError', data, status);
+			  });
+		}
+	});
+	
+	// error during persisting. Toast.
+	$scope.$on('CommitError', function(event, data, status) {
+		$mdToast.show({
+            template: "<md-toast><img src=\"{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_error.png') }}\" width=\"42\" height=\"42\" /> Error saving changes!</md-toast>",
+            hideDelay: 4000,
+            position: 'top right'
+        });
+	});
+	$scope.$on('ActionError', function(event, data, status) {
+		$mdToast.show({
+            template: "<md-toast><img src=\"{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_error.png') }}\" width=\"42\" height=\"42\" /> Error calling Myfox service!</md-toast>",
+            hideDelay: 4000,
+            position: 'top right'
+        });
+	});
+	$scope.$on('RefreshError', function(event, data, status) {
+		$mdToast.show({
+            template: "<md-toast><img src=\"{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_error.png') }}\" width=\"42\" height=\"42\" /> Error refreshing page state!</md-toast>",
+            hideDelay: 4000,
+            position: 'top right'
+        });
+	});
+			
+	// bottomSheet controls
+	$scope.showParameters = function($event) {
+		$mdBottomSheet.show({
+	      templateUrl: '{{ path('_md_parameters_bottom_sheet') }}',
+	      controller: 'ParametersBottomSheetCtrl',
+	      targetEvent: $event
+	    }).then(function(clickedItem) {  });
+	};
+	
+	// alarm status
+	$scope.setStatus = function($event, reqStatus) {
+		// lowering alarm status level: pattern required!
+		if ( (reqStatus == 'disarmed' && $scope.alarm.status != 'disarmed' ) || (reqStatus == 'partial' && $scope.alarm.status == 'armed' ) ) {
+			$mdDialog.show({
+			      template: '<md-dialog><md-content layout="column" layout-align="center center" style="background-color:'
+			    	  + (reqStatus=='disarmed'?'rgb(76,175,80)':'rgb(255,193,7)')
+			    	  + '"><div flex id="alarm_pattern"></div><md-progress-circular id="alarm_pattern_loader" md-mode="indeterminate"></md-progress-circular></md-content></md-dialog>',
+			      clickOutsideToClose: true,
+			      escapeToClose: true,
+			      onComplete: function() {
+			    	  $('#alarm_pattern_loader').hide();
+			    	  var lock = new PatternLock('div#alarm_pattern',{matrix:[3,3], onDraw: function(pattern) {
+			    		  if (pattern.length > 0) {
+			    			  $('#alarm_pattern_loader').show();
+			    			  
+			    			  $http.post(set_alarm_status_myfox_url, {level: reqStatus, home_key: {{home.getHomeKey}}, pattern: pattern }).
+				    			  success(function(data, status, headers, config) {
+				    				$('#alarm_pattern_loader').hide();
+				    				if (data.status == "OK") {
+				    					$scope.alarm.status = reqStatus;
+				    					$mdDialog.hide();
+				    				} else {
+				    					$rootScope.$broadcast('ActionError', data, status);
+				    					lock.error();
+				    				}
+				    			  }).
+				    			  error(function(data, status, headers, config) {
+				    				$rootScope.$broadcast('ActionError', data, status);
+				    				$('#alarm_pattern_loader').hide();
+				    				lock.error();
+				    			  });
+			    		  }
+					  }});
+			      }
+			    });
+		} else { // raise level: no pattern here.
+		
+			$http.post(set_alarm_status_myfox_url, {level: reqStatus, home_key: {{home.getHomeKey}}, pattern: null }).
+			  success(function(data, status, headers, config) {
+				if (data.status == "OK") {
+					$scope.alarm.status = reqStatus;
+				} else 
+					$rootScope.$broadcast('ActionError', data, status);
+			  }).
+			  error(function(data, status, headers, config) {
+				$rootScope.$broadcast('ActionError', data, status);
+			  });
+			
+		}
+	};
+	
+	// component delete / edit targets
+	$('#delete-dropzone').sortable({
+		receive: function(event, ui) {
+			
+			$http.post(remove_component_url, {component_id: $(ui.item[0]).attr('component-id')}).
+			  success(function(data, status, headers, config) {
+				  $(ui.item[0]).remove();
+			  }).
+			  error(function(data, status, headers, config) {
+				$rootScope.$broadcast('CommitError', data, status);
+			  });
+			
+		}
+	});
+	$('#edit-dropzone').sortable({
+		receive: function(event, ui) {
+			ui.sender.sortable('cancel');
+			componentEditDialog($(ui.item[0]).attr('component-id'), null, $mdDialog, $rootScope, $http);
+		}
+	});
+	$('md-content.page-layout gx-element').disableSelection();
+	
+	$scope.$watch('$viewContentLoaded', function() {
+		$scope.loading = false;
+	});
+})
+
+// Parameters bottom sheet controller
+.controller('ParametersBottomSheetCtrl', function($rootScope, $scope, $mdBottomSheet, $http, $window) {
+	$scope.items = [
+	    { name: 'Delete Home', icon: 'delete', id: 'delete_home', url: '{{ path("_md_parameters_bottom_sheet", {'home_id': home.id}) }}' },
+		{ name: 'Homes', icon: 'homes', id: 'login' },
+		{ name: 'Logout', icon: 'logout', id: 'logout' },
+		
+	];
+	
+	$scope.listItemClick = function($index) {
+		var clickedItem = $scope.items[$index];
+		
+		if (clickedItem.id == 'logout') {
+			$mdBottomSheet.hide(clickedItem);
+			$window.location.href = '{{ path("_home_logout") }}';
+		} else if (clickedItem.id == 'login') {
+			$mdBottomSheet.hide(clickedItem);
+			$window.location.href = '{{ path("_home_login") }}';
+		} else {
+			$http.post(clickedItem.url, {action_id: clickedItem.id}).
+			  success(function(data, status, headers, config) {
+				  if (clickedItem.id == 'delete_home' && data == '1') {
+					  $window.location.href = '{{ path("_home_logout") }}';
+				  }
+				  $mdBottomSheet.hide(clickedItem);
+			  }).
+			  error(function(data, status, headers, config) {
+				$rootScope.$broadcast('CommitError', data, status);
+				$mdBottomSheet.hide(clickedItem);
+			  });
+		}
+	};
+})
+
+//Layout controller (must be the last controller to define here)
+{{ include('GXHomeAutomationBundle:Layout:ng-controller.js.twig') }}
+

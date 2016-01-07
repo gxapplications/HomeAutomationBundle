@@ -1,0 +1,22 @@
+<div layout="row">
+	<div flex="60">
+		<div class="container-title" ng-show="!editMode && containers.title_0 != ''">
+			{{ '{{' }}containers.title_0{{ '}}' }}
+		</div>
+		{{ include('GXHomeAutomationBundle:Layout:container_edit_tool.html.twig', {'container': containers[0], 'index': 0}) }}
+		<div class="container" ng-class="{'md-whiteframe-z1': containers.border_0==1, 'md-whiteframe-z2': containers.border_0==2, 'md-whiteframe-z3': containers.border_0==3}">
+			{{ include('GXHomeAutomationBundle:Layout:vertical_container.html.twig', {'container': containers[0]}) }}
+		</div>
+	</div>
+	<div flex>
+		<div class="container-title" ng-show="!editMode && containers.title_1 != ''">
+			{{ '{{' }}containers.title_1{{ '}}' }}
+		</div>
+		{{ include('GXHomeAutomationBundle:Layout:container_edit_tool.html.twig', {'container': containers[1], 'index': 1}) }}
+		<div class="container" ng-class="{'md-whiteframe-z1': containers.border_1==1, 'md-whiteframe-z2': containers.border_1==2, 'md-whiteframe-z3': containers.border_1==3}">
+			{{ include('GXHomeAutomationBundle:Layout:vertical_container.html.twig', {'container': containers[1]}) }}
+		</div>
+	</div>
+</div>
+<div ng-show="editMode" style="height:8em;">&nbsp;</div>
+<br />

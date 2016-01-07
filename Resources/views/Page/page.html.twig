@@ -1,0 +1,105 @@
+{% extends "GXHomeAutomationBundle::base.html.twig" %}
+
+{% block title %}{{home.name}}{% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets
+		'bundles/gxhomeautomation/css/jquery-ui.min.css'
+        'bundles/gxangularmaterial/css/patternLock.css'
+        'bundles/gxhomeautomation/css/main.css'
+        'bundles/gxhomeautomation/css/page.css'
+        'bundles/gxhomeautomation/css/animations.css'
+        'bundles/gxhomeautomation/css/jquery.temperatureloader-0.1.css'
+        'bundles/gxhomeautomation/css/jquery.planer-0.1.css'
+        filter='?phpcssembed,cssrewrite' %} {# filter='?phpcssembed,cssrewrite' #}
+	    <link rel="stylesheet" href="{{ asset_url }}" />
+	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{% javascripts
+	    '@GXHomeAutomationBundle/Resources/public/js/jquery-2.1.1.min.js'
+	    '@GXHomeAutomationBundle/Resources/public/js/jquery-ui.min.js'
+	    '@GXAngularMaterialBundle/Resources/public/js/patternLock.min.js'
+		'@GXHomeAutomationBundle/Resources/public/js/jquery.temperatureloader-0.1.js'
+		'@GXHomeAutomationBundle/Resources/public/js/jquery.planer-0.1.js'
+		'@GXHomeAutomationBundle/Resources/public/js/jquery.countdown.js'
+		'@GXHomeAutomationBundle/Resources/public/js/utils.js'
+		 %} {# filter='?closure' #}
+	    <script src="{{ asset_url }}"></script>
+	{% endjavascripts %}
+	<script>
+		{{ include('GXHomeAutomationBundle:Page:ng-controllers.js.twig', {'home': home, 'page': page, 'layouts': layouts, 'alarm_status': alarm_status}) }}
+	</script>
+{% endblock %}
+
+{% block body %}
+
+<div layout="column" layout-fill style="overflow:hidden;">
+
+<md-toolbar md-scroll-shrink class="page-header">
+	<header ng-controller="HeaderControls" class="page-header md-whiteframe-z1 ng-hide" ng-show="!loading"
+			ng-class="{'off': alarm.status == 'disarmed', 'partial': alarm.status == 'partial', 'on': alarm.status == 'armed'}">
+	   	<div class="top-right-controls">
+			<md-button class="md-fab md-hue-4 md-primary" aria-label="Edit mode" ng-click="toggleEditMode($event)" ng-class="{'md-warn': editMode}">
+				<img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_edit.png') }}" class="fab-button" />
+			</md-button>
+			<md-button class="md-fab md-hue-4 md-primary" aria-label="Parameters" ng-click="showParameters($event)">
+				<img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_settings.png') }}" class="fab-button" />
+			</md-button>
+		</div>
+	
+		<md-whiteframe class="header-controls" layout="vertical" layout-md="horizontal" layout-align="space-around center">
+			<div>
+				<div ng-show="!editMode" class="edit-animate-show" style="font-size:1.6em;text-shadow: 3px 2px 3px rgba(0,0,0,.32);">
+					{{ '{{' }} page.name {{ '}}' }} <small>({{home.name}})</small>
+				</div>
+				<div ng-show="editMode" class="edit-animate-show" style="position:relative; bottom:10px;">
+					<md-input-container>
+			      		<label>Page name</label>
+			      		<input ng-model="page.name" required name="page_name">
+			    	</md-input-container>
+				</div>
+			</div>
+			<md-card class="lighter edit-animate-show" ng-show="editMode">
+				<label for="layout_select">Layout: </label>
+				<select id="layout_select" ng-model="layout" ng-options="layout.name for (id , layout) in layouts"
+					ng-change="justChanged()"
+					label="Layout"></select>
+			</md-card>
+		</md-whiteframe>
+		
+		<div class="header-status" ng-show="!editMode">
+			<md-button class="md-fab md-accent md-hue-1" ng-class="{'gx-translucent': alarm.status != 'disarmed'}" aria-label="Unarmed" ng-click="setStatus($event, 'disarmed')">
+				<img src="{{ asset('bundles/gxhomeautomation/images/status_off.png') }}" class="fab-button" />
+			</md-button>
+			<md-button class="md-fab md-accent md-hue-2" ng-class="{'gx-translucent': alarm.status != 'partial'}" aria-label="Partially armed" ng-click="setStatus($event, 'partial')">
+				<img src="{{ asset('bundles/gxhomeautomation/images/status_partial.png') }}" class="fab-button" />
+			</md-button>
+			<md-button class="md-fab md-accent md-hue-3" ng-class="{'gx-translucent': alarm.status != 'armed'}" aria-label="Fully armed" ng-click="setStatus($event, 'armed')">
+				<img src="{{ asset('bundles/gxhomeautomation/images/status_on.png') }}" class="fab-button" />
+			</md-button>
+		</div>
+		
+		<div layout="row" layout-margin class="header-dropzone" ng-show="editMode">
+			<md-whiteframe class="md-whiteframe-z1" flex layout-align="center end" id="delete-dropzone">
+   			</md-whiteframe>
+			<md-whiteframe class="md-whiteframe-z1" flex layout-align="center end" id="edit-dropzone">
+   			</md-whiteframe>
+		</div>
+	</header>
+</md-toolbar>
+
+<md-content flex class="page-layout">
+
+	<div ng-controller="LayoutControls">
+		<div ng-include="layout_url" onload="layoutLoaded();" ng-show="!layout_loading"></div>
+		<div ng-show="layout_loading" layout="column" layout-align="center center">
+			<md-progress-circular md-mode="indeterminate" style="margin-top: 6em;"></md-progress-circular>
+		</div>
+	</div>
+
+</md-content>
+</div>
+
+{% endblock %}

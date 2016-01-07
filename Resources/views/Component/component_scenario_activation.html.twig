@@ -1,0 +1,116 @@
+{% set scopeComponent = "elements['container_" ~ component.getContainer.id ~ "']['components'][" ~ component.getContainerPosition ~ "]" %}
+{% set radioMode = (component.getOption1 > 0) %}
+{% set now = date().timestamp %}
+<md-content component-id="{{component.id}}" layout="row" layout-wrap layout-align="space-between center">
+
+	<md-button class="md-raised component-button" flex
+			ng-disabled="{% if component.getForeignId1 is null %}true{% else %}({{ scopeComponent }}.state == 1){% endif %}"
+			layout="row" layout-align="start center" ng-class="{'md-primary': ({{ scopeComponent }}.state == 2), 'md-accent' : ({{ scopeComponent }}.state == 3)}"
+			ng-click="scenarioActivation({{ component.getContainer.id }}, {{ component.getContainerPosition }}, 1)"
+			style="{% if component.getForeignId2 is not empty and radioMode %}border-top-right-radius:inherit; border-bottom-right-radius:inherit;{% endif %}margin:1px;"
+			>
+		<div flex="15"> <small>[ic]</small> </div>
+		<div flex layout="column">
+			<div flex>
+				{{ component.title }}
+			</div>
+			{% if component.description %}
+			<div flex class="description" style="text-overflow: ellipsis">
+				{{ component.description }}
+			</div>
+			{% endif %}
+		</div>
+		<div class="timer timer_1" flex="10" style="min-height:4em;font-size:0.5em;padding-top:3em;"
+			ng-class="{
+				'progress' : ({{ scopeComponent }}.state == 1),
+				'delay' : ({{ scopeComponent }}.state == 2),
+				'active': ({{ scopeComponent }}.delay_2 > 0 && {{ scopeComponent }}.state == 3 && {{ scopeComponent }}.last_activation+{{ scopeComponent }}.delay_1+{{ scopeComponent }}.delay_2 > {{now}}),
+				'error' : ({{ scopeComponent }}.state == -1)
+			}"> 
+		</div>
+	</md-button>
+	{% if component.getForeignId2 is not empty %}
+	<md-button class="md-raised component-button" flex
+			ng-disabled="{% if component.getForeignId2 is null %}true{% else %}({{ scopeComponent }}.state_2 == 1){% endif %}"
+			layout="row" layout-align="start center" ng-class="{'md-primary': ({{ scopeComponent }}.state_2 == 2), 'md-accent' : ({{ scopeComponent }}.state_2 == 3)}"
+			ng-click="scenarioActivation({{ component.getContainer.id }}, {{ component.getContainerPosition }}, 2)"
+			style="{% if radioMode %}border-top-left-radius:inherit; border-bottom-left-radius:inherit;{% endif %}{% if component.getForeignId3 is not empty and radioMode %}border-top-right-radius:inherit; border-bottom-right-radius:inherit;{% endif %}margin:1px;"
+			>
+		<div flex="15"> <small>[ic]</small> </div>
+		<div flex layout="column">
+			<div flex>
+				{{ component.getTitle2 }}
+			</div>
+			{% if component.getDescription2 %}
+			<div flex class="description" style="text-overflow: ellipsis">
+				{{ component.getDescription2 }}
+			</div>
+			{% endif %}
+		</div>
+		<div class="timer timer_2" flex="10" style="min-height:4em;font-size:0.5em;padding-top:3em;"
+			ng-class="{
+				'progress' : ({{ scopeComponent }}.state_2 == 1),
+				'delay' : ({{ scopeComponent }}.state_2 == 2),
+				'active': ({{ scopeComponent }}.delay_2 > 0 && {{ scopeComponent }}.state_2 == 3 && {{ scopeComponent }}.last_activation+{{ scopeComponent }}.delay_1+{{ scopeComponent }}.delay_2 > {{now}}),
+				'error' : ({{ scopeComponent }}.state_2 == -1)
+			}"> 
+		</div>
+	</md-button>
+	{% endif %}
+	{% if component.getForeignId3 is not empty %}
+	<md-button class="md-raised component-button" flex
+			ng-disabled="{% if component.getForeignId3 is null %}true{% else %}({{ scopeComponent }}.state_3 == 1){% endif %}"
+			layout="row" layout-align="start center" ng-class="{'md-primary': ({{ scopeComponent }}.state_3 == 2), 'md-accent' : ({{ scopeComponent }}.state_3 == 3)}"
+			ng-click="scenarioActivation({{ component.getContainer.id }}, {{ component.getContainerPosition }}, 3)"
+			style="{% if radioMode %}border-top-left-radius:inherit; border-bottom-left-radius:inherit;{% endif %}{% if component.getForeignId4 is not empty and radioMode %}border-top-right-radius:inherit; border-bottom-right-radius:inherit;{% endif %}margin:1px;"
+			>
+		<div flex="15"> <small>[ic]</small> </div>
+		<div flex layout="column">
+			<div flex>
+				{{ component.getTitle3 }}
+			</div>
+			{% if component.getDescription3 %}
+			<div flex class="description" style="text-overflow: ellipsis">
+				{{ component.getDescription3 }}
+			</div>
+			{% endif %}
+		</div>
+		<div class="timer timer_3" flex="10" style="min-height:4em;font-size:0.5em;padding-top:3em;"
+			ng-class="{
+				'progress' : ({{ scopeComponent }}.state_3 == 1),
+				'delay' : ({{ scopeComponent }}.state_3 == 2),
+				'active': ({{ scopeComponent }}.delay_2 > 0 && {{ scopeComponent }}.state_3 == 3 && {{ scopeComponent }}.last_activation+{{ scopeComponent }}.delay_1+{{ scopeComponent }}.delay_2 > {{now}}),
+				'error' : ({{ scopeComponent }}.state_3 == -1)
+			}"> 
+		</div>
+	</md-button>
+	{% endif %}
+	{% if component.getForeignId4 is not empty %}
+	<md-button class="md-raised component-button" flex
+			ng-disabled="{% if component.getForeignId4 is null %}true{% else %}({{ scopeComponent }}.state_4 == 1){% endif %}"
+			layout="row" layout-align="start center" ng-class="{'md-primary': ({{ scopeComponent }}.state_4 == 2), 'md-accent' : ({{ scopeComponent }}.state_4 == 3)}"
+			ng-click="scenarioActivation({{ component.getContainer.id }}, {{ component.getContainerPosition }}, 4)"
+			style="{% if radioMode %}border-top-left-radius:inherit; border-bottom-left-radius:inherit;{% endif %}margin:1px;"
+			>
+		<div flex="15"> <small>[ic]</small> </div>
+		<div flex layout="column">
+			<div flex>
+				{{ component.getTitle4 }}
+			</div>
+			{% if component.getDescription4 %}
+			<div flex class="description" style="text-overflow: ellipsis">
+				{{ component.getDescription4 }}
+			</div>
+			{% endif %}
+		</div>
+		<div class="timer timer_4" flex="10" style="min-height:4em;font-size:0.5em;padding-top:3em;"
+			ng-class="{
+				'progress' : ({{ scopeComponent }}.state_4 == 1),
+				'delay' : ({{ scopeComponent }}.state_4 == 2),
+				'active': ({{ scopeComponent }}.delay_2 > 0 && {{ scopeComponent }}.state_4 == 3 && {{ scopeComponent }}.last_activation+{{ scopeComponent }}.delay_1+{{ scopeComponent }}.delay_2 > {{now}}),
+				'error' : ({{ scopeComponent }}.state_4 == -1)
+			}"> 
+		</div>
+	</md-button>
+	{% endif %}
+</md-content>

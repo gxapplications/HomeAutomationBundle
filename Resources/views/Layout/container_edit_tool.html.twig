@@ -1,0 +1,19 @@
+<div layout="row" layout-padding class="editing-tools" ng-show="editMode">
+	<md-card flex class="lighter edit-animate-show"> 
+		<md-input-container>
+      		<label>Title</label>
+      		<input ng-model="containers.title_{{index}}" name="container_title" md-maxlength="98"
+      			ng-init="containers.title_{{index}}='{{ container.title|replace({'\'':'\\\''}) }}'" />
+    	</md-input-container>
+	</md-card>
+    <md-card class="lighter edit-animate-show">
+    	<div layout="row" layout-align="center center" >
+      	<div>
+      		Border:
+      	</div>
+      	<div style="width:160px; padding:0 0 0 1em;">
+    			<md-slider discrete ng-init="containers.border_{{index}}={{container.border}}" ng-model="containers.border_{{index}}" step="1" min="0" max="3" aria-label="border" />
+    		</div>
+    	</div>
+    </md-card>
+</div>

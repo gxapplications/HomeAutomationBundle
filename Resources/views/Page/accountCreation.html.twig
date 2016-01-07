@@ -1,0 +1,152 @@
+{% extends "GXHomeAutomationBundle::base.html.twig" %}
+
+{% block title %}Home creation{% endblock %}
+
+{% block stylesheets %}
+	{% stylesheets
+        'bundles/gxangularmaterial/css/patternLock.css'
+        'bundles/gxhomeautomation/css/main.css'
+        'bundles/gxhomeautomation/css/rubber.css'
+        'bundles/gxhomeautomation/css/animations.css'
+        filter='cssrewrite' %}
+	    <link rel="stylesheet" href="{{ asset_url }}" />
+	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{% javascripts
+	    '@GXHomeAutomationBundle/Resources/public/js/jquery-2.1.1.min.js'
+	    '@GXAngularMaterialBundle/Resources/public/js/patternLock.min.js'
+		filter='?closure' %}
+	    <script src="{{ asset_url }}"></script>
+	{% endjavascripts %}
+	<script>
+		angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
+	
+		// Apply default configurations
+		{{ include('GXHomeAutomationBundle::ng-config.js.twig') }}
+	
+		.controller("AccountControls", function($rootScope, $scope, $http, $window, $mdBottomSheet) {
+			var commit_url = "{{ path('_account_creation') }}";
+			$scope.account = {
+				my_email: "{{ last_email }}",
+				my_pass: "",
+				home_id: "",
+				home_name: "My Home",
+				page_label: "Main controls",
+				pattern: ""
+			};
+			$scope.send = function($event) {
+				$http.post(commit_url, {account: $scope.account}).
+				  success(function(data, status, headers, config) {
+					$window.location.href = data;
+				  }).
+				  error(function(data, status, headers, config) {
+				    $rootScope.$broadcast('CommitError', data, status);
+				  });
+			};
+			// bottomSheet controls
+			$scope.showParameters = function($event) {
+				$mdBottomSheet.show({
+			      templateUrl: '{{ path('_md_admin_bottom_sheet') }}',
+			      controller: 'AdminBottomSheetCtrl',
+			      targetEvent: $event
+			    }).then(function(clickedItem) {  });
+			};
+			
+			var lock = new PatternLock('#patternHolder',{matrix:[3,3], onDraw: function(pattern) {
+				$scope.account.pattern = pattern;
+				$scope.$apply(); // force refresh of ng-disabled evaluation for form button
+			}});
+		})
+		
+				
+		// Parameters bottom sheet controller
+		.controller('AdminBottomSheetCtrl', function($rootScope, $scope, $mdBottomSheet, $http, $window) {
+			$scope.items = [
+			    { name: 'Home manager', icon: 'homes', id: 'manager' },
+			    { name: 'Logout', icon: 'logout', id: 'logout' },
+			];
+			
+			$scope.listItemClick = function($index) {
+				var clickedItem = $scope.items[$index];
+				
+				if (clickedItem.id == 'logout') {
+					$mdBottomSheet.hide(clickedItem);
+					$window.location.href = '{{ path("_home_logout") }}';
+				} else if (clickedItem.id == 'create') {
+					$mdBottomSheet.hide(clickedItem);
+					$window.location.href = '{{ path("_account_creation") }}';
+				} else if (clickedItem.id == 'manager') {
+					$mdBottomSheet.hide(clickedItem);
+					$window.location.href = '{{ path("_account_manager") }}';
+				} else {
+					
+				}
+			};
+		});
+		
+	</script>
+{% endblock %}
+
+{% block body %}
+
+<form name="accountForm" method="post" layout="row" layout-align="center" layout-fill ng-controller="AccountControls">
+	<div layout="column" layout-align="center">
+		<div layout-align="start" layout-fill layout-padding>
+			<div class="big-title">Account creation</div>
+		</div>
+		<div layout-gt-md="row" layout="column" layout-align="start" layout-fill layout-padding class="rubber">
+			<span class="title">Myfox account: </span>
+			
+			<md-input-container style="margin:0 1em;">
+	      		<label>Login (e-mail)</label>
+	      		<input ng-model="account.my_email" type="email" required name="email">
+	    	</md-input-container>
+	    	<md-input-container style="margin:0 1em;">
+	      		<label>Password</label>
+	      		<input ng-model="account.my_pass" type="password" required name="password">
+	    	</md-input-container>
+	    	
+		</div>
+		<div layout-gt-md="row" layout="column" layout-align="start" layout-fill layout-padding class="rubber">
+			<span class="title">Myfox home: </span>
+			
+			<md-input-container style="margin:0 1em;">
+	      		<label>ID</label>
+	      		<input ng-model="account.home_id" ng-pattern="/^[0-9]+$/" required name="home_id">
+	      		<div ng-messages="accountForm.home_id.$error">
+          			<div ng-message="required" style="position:absolute;width: 38em;">You can find it in the URL of myfox.me site after login step.</div>
+          			<div ng-message="pattern">The home ID is a unique number.</div>
+        		</div>
+	    	</md-input-container>
+	    	<md-input-container style="margin:0 1em;">
+	      		<label>Name</label>
+	      		<input ng-model="account.home_name" required name="name">
+	    	</md-input-container>
+	    	
+		</div>
+		<div layout-gt-md="row" layout="column" layout-align="start" layout-fill layout-padding class="rubber">
+			<span class="title">Default page: </span>
+			
+			<md-input-container style="margin:0 1em" class="long">
+	      		<label>Name</label>
+	      		<input ng-model="account.page_label" required name="page_label">
+	    	</md-input-container>
+	    	
+		</div>
+	</div>
+	<div layout="column" layout-align="center center" class="rubber-right">
+	    <span class="title">Pattern for Home login: </span>
+		<div id="patternHolder" layout="horizontal" layout-align="center" layout-fill></div>
+		
+		<md-button layout-fill class="md-raised md-primary" ng-click="send()" ng-disabled="!accountForm.$valid || account.pattern==''">Create now</md-button>
+		
+	</div>
+		
+	<md-button class="md-fab md-hue-4 md-primary menu-button" aria-label="Menu" ng-click="showParameters($event)">
+		<img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_settings.png') }}" class="fab-button" />
+	</md-button>
+</form>
+
+{% endblock %}

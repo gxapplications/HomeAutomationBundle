@@ -1,0 +1,219 @@
+@CHARSET "UTF-8";
+
+md-toolbar.page-header {
+	background-image: url('../images/doorstep-background.jpg');
+	background-position: center;
+}
+
+header.page-header {
+	padding: 1em;
+}
+header.page-header.off {
+	background-color: rgba(43, 175, 43, 0.4);
+}
+header.page-header.partial {
+	background-color: rgba(255, 167, 38, 0.6);
+}
+header.page-header.on {
+	background-color: rgba(232, 78, 64, 0.8);
+}
+div.header-status button.gx-translucent {
+	opacity: 0.5;
+}
+
+md-card.lighter {
+	background-color: #90A4AE; /* Blue grey 300 */
+	padding: 0.4em;
+}
+md-dialog.lighter, md-content.lighter, md-dialog.lighter md-content {
+	background-color: #90A4AE; /* Blue grey 300 */
+}
+
+md-content.page-layout {
+	padding: 1em;
+	overflow: auto;
+	height: 10px; /* means nothing, but not auto! */
+	margin-bottom: -50px;
+	background-color: #607D8B; /* Blue grey 500 */
+}
+md-content.page-layout > div {
+	overflow: visible;
+	margin-bottom: 50px;
+}
+
+
+/* Bottom sheet Parameters menu */
+	.parametersBottomSheet .md-icon-container md-inline-grid-icon {
+		display: inline-block;
+		height: 48px;
+		width: 48px;
+		background-size: 48px 48px;
+	}
+	.parametersBottomSheet md-inline-grid-icon[icon=homes] {
+		background-image: url('../../gxangularmaterial/images/home.png');
+	}
+	.parametersBottomSheet md-inline-grid-icon[icon=delete] {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_delete.png');
+	}
+	.parametersBottomSheet md-inline-grid-icon[icon=logout] {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_undo.png');
+	}
+
+/* Top of the page : top right controller, header and edit layout controller */
+	.top-right-controls {
+		float: right;
+		margin-left: 20px;
+		position: relative;
+		bottom: 6px;
+	}
+	.header-controls {
+		min-height: 3.9em;
+	}
+	.header-status {
+		position: absolute;
+		right: 8%;
+		bottom: -24px;
+	}
+	.header-dropzone {
+		position: absolute;
+		bottom: -40px;
+		width: 50%;
+	}
+	.header-dropzone > md-whiteframe {
+		min-height: 2.2em;
+		border: dashed 2px rgba(255,255,255,.55);
+	}
+	.header-dropzone > md-whiteframe#delete-dropzone {
+		background-color: rgba(230,10,10,.6);
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_delete.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: auto 86%;
+	}
+	.header-dropzone > md-whiteframe#edit-dropzone {
+		background-color: rgba(240,120,10,.6);
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_edit.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: auto 86%;
+	}
+	
+/* Container */
+	div.container-title {
+		font-size: 1.6em;
+		font-weight: bold;
+		text-shadow: 3px 2px 3px rgba(0,0,0,.32);
+	}
+	div.container {
+		padding: 0.3em 0.4em;
+	}
+	div.container div.component {
+		margin: 0.4em;
+	}
+	div.container div.component > div > small {
+		background:rgba(255,128,128,.5);
+	}
+	form.new_component select, md-dialog.component_edit_dialog form select {
+		margin: 0.2em;
+		padding: 0.1em;
+	}
+	div.component-handler {
+		height: 3.4em;
+		width: 3.4em;
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_view_as_grid.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: auto 94%;
+		cursor: move;
+	}
+	.component-placeholder {
+		border: dashed 2px rgba(255,255,255,.7);
+		background-color: rgba(255,255,255,.33);
+		height: 4em;
+	}
+	#delete-dropzone .component-placeholder, #edit-dropzone .component-placeholder {
+		height: 2em;
+		border: none;
+	}
+	#delete-dropzone div.component, #edit-dropzone div.component {
+		display: none;
+	}
+	gx-element.ui-sortable {
+		min-height: 2.4em;
+	}
+	
+/* Component Edit */
+	md-dialog.component_edit_dialog, md-dialog.component_edit_dialog > md-content {
+    	color: rgba(255, 255, 255, 0.9);
+		background-color: #607D8B; /* Blue grey 500 */
+    }
+	.component_edit_dialog md-input-container.very_long > input {
+		min-width: 230px;
+		width: 100% !important;
+	}
+	
+/* Component */
+	div.component md-content {
+		padding: 0.4em;
+		background: transparent;
+		width: 100%;
+	}
+	div.component md-content .component-button {
+		color: rgba(255,255,255,1);
+		font-size: 16pt;
+		text-transform: inherit;
+		min-width: 7em;
+	}
+	div.component md-content .component-button .description {
+		color: rgba(255,255,255,.7);
+		font-size: 0.66em;
+		padding: 0.1em;
+	}
+	div.component md-content button div.progress {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_forward.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+	}
+	div.component md-content button div.delay {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_time.png');
+		background-position: 50% -0.4em;
+		background-repeat: no-repeat;
+		background-size: auto 88%;
+	}
+	div.component md-content button div.active {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_data_usage.png');
+		background-position: 50% -0.4em;
+		background-repeat: no-repeat;
+		background-size: auto 88%;
+	}
+	div.component md-content button div.error {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_error.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+	}
+	div.component md-content button div timer {
+		visibility: hidden;
+	}
+	div.component md-content button div.delay timer, div.component md-content button div.active timer {
+		visibility: visible;
+	}
+	
+	
+	
+	div.ratio-box-1-1 {
+		position: relative;
+	}
+	div.ratio-box-1-1:before {
+		content: "";
+		display: block;
+		padding-top: 100%; 	/* initial ratio of 1:1*/
+	}
+	div.ratio-content {
+		position:  absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+	}

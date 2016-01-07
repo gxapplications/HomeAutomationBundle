@@ -1,0 +1,83 @@
+@CHARSET "UTF-8";
+
+form div.rubber {
+	background: rgba(56,74,82, 1);
+	padding: 0.6em !important;
+	margin-bottom: 2em;
+	box-shadow: 3px 5px 6px -1px rgba(0, 0, 0, 0.6);
+}
+form div.rubber-right {
+	width: 346px;
+	margin-top: -10px;
+	background: rgba(56,74,82, 1);
+	padding: 1em 1em 1.4em !important;
+	box-shadow: 5px 0 6px -1px rgba(0, 0, 0, 0.6);
+}
+
+form div.login-rubber {
+	background: rgba(56,74,82, 1);
+	padding: 1em 1em 1.4em !important;
+	margin-bottom: 2em;
+	box-shadow: 3px 5px 6px -1px rgba(0, 0, 0, 0.6);
+}
+
+form div.login-rubber-right {
+	min-width: 346px;
+	margin-top: -10px;
+	background: rgba(56,74,82,1);
+	padding: 1em 1em 1.4em !important;
+	box-shadow: 5px 0 6px -1px rgba(0, 0, 0, 0.6);
+}
+
+form div.login-rubber md-radio-button {
+	padding: 1em;
+	margin: 0.6em;
+	text-align: left;
+}
+
+form div.login-rubber button.md-button {
+	padding: 1em;
+	margin: 0.6em;
+}
+
+form div.rubber span.title, form div.rubber-right span.title, form div.login-rubber span.title, form div.login-rubber-right span.title {
+	font-size: 1.4em;
+	margin: 0 0.5em;
+	min-width: 7em;
+	text-align: left;
+}
+
+div.big-title {
+	font-size: 1.6em;
+	font-weight: bold;
+	text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.6);
+	padding-bottom: 0.5em;
+}
+
+@media (max-width: 959px) { form div.rubber md-input-container.long > input {
+	max-width: 433px;
+	width: inherit !important;
+}}
+
+button.menu-button {
+	position: absolute;
+	right: 1.2em;
+	top: 1.2em;
+}
+
+/* Bottom sheet Parameters menu */
+	.parametersBottomSheet .md-icon-container md-inline-grid-icon {
+		display: inline-block;
+		height: 48px;
+		width: 48px;
+		background-size: 48px 48px;
+	}
+	.parametersBottomSheet md-inline-grid-icon[icon=homes] {
+		background-image: url('../../gxangularmaterial/images/home.png');
+	}
+	.parametersBottomSheet md-inline-grid-icon[icon=logout] {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_undo.png');
+	}
+	.parametersBottomSheet md-inline-grid-icon[icon=create] {
+		background-image: url('../../gxangularmaterial/images/android_core_holodark/ic_action_add_person.png');
+	}

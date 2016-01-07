@@ -1,0 +1,30 @@
+{% set scopeComponent = "elements['container_" ~ component.getContainer.id ~ "']['components'][" ~ component.getContainerPosition ~ "]" %}
+<md-content component-id="{{component.id}}" layout="row" layout-align="space-between center">
+
+	<md-button class="md-raised md-primary component-button" flex
+			ng-disabled="{% if component.getForeignId1 is null %}true{% else %}({{ scopeComponent }}.state == 1){% endif %}"
+			layout="row" layout-align="start center" ng-class="{'md-accent': ({{ scopeComponent }}.state == 3)}"
+			ng-click="scenarioPlay({{ component.getContainer.id }}, {{ component.getContainerPosition }})"
+			>
+		<div flex="15"> <small>[icon]</small> </div>
+		<div flex layout="column">
+			<div flex>
+				{{ component.title }}
+			</div>
+			{% if component.description %}
+			<div flex class="description" style="text-overflow: ellipsis">
+				{{ component.description }}
+			</div>
+			{% endif %}
+		</div>
+		<div class="timer" flex="10" style="min-height:4em;font-size:0.5em;padding-top:3em;"
+			ng-class="{
+				'progress' : ({{ scopeComponent }}.state == 1),
+				'delay' : ({{ scopeComponent }}.state == 2),
+				'active': ({{ scopeComponent }}.state == 3),
+				'error' : ({{ scopeComponent }}.state == -1)
+			}"> 
+		</div>
+	</md-button>
+	
+</md-content>

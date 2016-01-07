@@ -1,0 +1,60 @@
+<md-dialog class="component_edit_dialog" aria-label="Component parameters">
+  <md-content>
+  	<form name="componentForm" ng-init="component.id={{ component.id }}">
+    	<fieldset class="md-whiteframe-z1 lighter" layout="column">
+  			<legend>Heating dashboard On/Off</legend>
+  			<md-input-container flex class="very_long">
+	      		<label>Title</label>
+	      		<input ng-model="component.title" required name="component_title" md-maxlength="98"
+	      			ng-init="component.title='{{ component.title|replace({'\'':'\\\''}) }}'" />
+	    	</md-input-container>
+	  		<md-input-container class="very_long">
+	      		<label>Description</label>
+	      		<textarea ng-model="component.description" columns="1" md-maxlength="482"
+	      			ng-init="component.description='{{ component.description|replace({'\'':'\\\''}) }}'"></textarea>
+	    	</md-input-container>
+	    </fieldset>
+	    
+	    <br/>
+  		<fieldset class="md-whiteframe-z1 darker" layout="column" style="margin-bottom:8px;">
+  			<legend>Lowest temp. scenarii</legend>
+  			
+  			{% set lowestScenarii = component.getHeatingDashboard.getScenariiMinimalTemp|split(',') %}
+			{% for i in 0..10 %}
+				<select id="edit_heating_dashboard_{{ component.id }}_lowest_{{ i }}"
+					ng-model="component.heating_dashboard.scenarii_minimal_temp[{{ i }}]"
+					{% if lowestScenarii|length > i %}ng-init="component.heating_dashboard.scenarii_minimal_temp[{{ i }}]='{{ lowestScenarii[i] }}'"{% endif %}
+					label="Scenario #{{ i+1 }}">
+					<option value="">None</option>
+					{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+				  		<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+				  	{% endfor %}
+				</select>
+			{% endfor %}
+  		</fieldset>
+  		
+  		<br/>
+  		<fieldset class="md-whiteframe-z1 darker" layout="column" style="margin-bottom:8px;">
+  			<legend>Highest temp. scenarii</legend>
+  			
+  			{% set highestScenarii = component.getHeatingDashboard.getScenariiMaximalTemp|split(',') %}
+			{% for i in 0..10 %}
+				<select id="edit_heating_dashboard_{{ component.id }}_highest_{{ i }}"
+					ng-model="component.heating_dashboard.scenarii_maximal_temp[{{ i }}]"
+					{% if highestScenarii|length > i %}ng-init="component.heating_dashboard.scenarii_maximal_temp[{{ i }}]='{{ highestScenarii[i] }}'"{% endif %}
+					label="Scenario #{{ i+1 }}">
+					<option value="">None</option>
+					{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+				  		<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+				  	{% endfor %}
+				</select>
+			{% endfor %}
+  		</fieldset>
+    </form>
+  </md-content>
+  <div class="md-actions" layout="row">
+    <span flex></span>
+    <md-button ng-click="cancel()">Cancel</md-button>
+    <md-button ng-click="save()" class="md-primary md-raised">Save</md-button>
+  </div>
+</md-dialog>

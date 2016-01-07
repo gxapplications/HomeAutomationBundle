@@ -1,0 +1,307 @@
+{# included in Layout ng-controller.js.twig #}
+
+$scope.elements = []; // contains containers data if needed
+
+// Main init call. Can be called multiple time on the same page. /!\ Not thread safe (uses http ajax sub queries).
+$scope.refreshComponents = function() {
+	var now = Date.now()/1000;
+	
+	// scan all components
+	for (containerKey in $scope.elements) {
+		for (component of $scope.elements[containerKey]['components']) {
+			component['container'] = containerKey; // need it to retrieve all path from component.
+			
+			// Scenario Play
+			if (component['type'] == 1) { // scenario_play
+				var lastAction = component['last_action'];
+				var delay1 = component['delay_1']*60;
+				var delay2 = component['delay_2']*60;
+				if (lastAction+delay1 > now) {
+					component['state'] = 2; // action delayed
+					$('md-content[component-id="'+component['id']+'"] div.timer').showTimer({date: lastAction+delay1, onEnd: function() {
+						$scope.refreshComponents();
+					}});
+				} else if (lastAction+delay1+delay2 > now) {
+					component['state'] = 3; // activated
+					$('md-content[component-id="'+component['id']+'"] div.timer').showTimer({date: lastAction+delay1+delay2, onEnd: function() {
+						$scope.refreshComponents();
+					}});
+				} else {
+					component['state'] = 0; // deactivated
+				}
+			}
+			
+			// Heating dashboard
+			if (component['type'] == 6) { // heating_dashboard
+				setTimeout(refreshHeatingDoubleKnob, 1000,
+					component,
+					function(oldValue, newValue, componentData) { // onMinUpdate
+						$scope.heatingDashboardMinMaxUpdate(oldValue, newValue, componentData, 'minimal_temp');
+					},
+					function(oldValue, newValue, componentData) { // onMaxUpdate
+						$scope.heatingDashboardMinMaxUpdate(oldValue, newValue, componentData, 'maximal_temp');
+					},
+					function(componentData) { // onCenterClick
+		            	// TODO !6 : centerClick d'un doubleKnob: qu'en fait-on ?
+		            }
+				);
+				setTimeout(refreshHeatingPlaner, 800,
+					component
+				);
+			}
+			
+		}
+	}
+	
+	// scan all components which need scenario states to be refreshed.
+	$http.post('{{ path("_get_sync_myfox") }}', {
+		home_key: {{home.getHomeKey}},
+		command: 'CMD_GET_SCENARIO_ITEMS'
+	  }).
+	  success(function(data, status, headers, config) {
+		  // error in the success result...
+		  if (data.status != "OK") {
+			$rootScope.$broadcast('RefreshError', data, status);
+			return;
+		  }
+		  
+		  var now = Date.now()/1000; // redefine this var because ajax call induces async execution here.
+		  var scenarii = {}; // hash table to retrieve scenario by id.
+		  for (scenario of data.payload.items)
+			  scenarii[scenario.scenarioId] = scenario;
+
+		  for (containerKey in $scope.elements) {
+			for (component of $scope.elements[containerKey]['components']) {
+				
+				// Scenario Activation
+				if (component['type'] == 2) { // scenario_activation
+					var lastAction = component['last_action'];
+					var delay1 = component['delay_1']*60;
+					//var delay2 = component['delay_2']*60; // TODO !9: Balance inverse apres Y minutes<br/>
+					if (lastAction+delay1 > now) {
+						component['state'] = 2; // action delayed: because we don't know which has been clicked, everybody is in delayed state.
+						component['state_2'] = 2; component['state_3'] = 2; component['state_4'] = 2;
+						$('md-content[component-id="'+component['id']+'"] div.timer_1').showTimer({date: lastAction+delay1, onEnd: function() {
+							$scope.refreshComponents();
+						}});
+						$('md-content[component-id="'+component['id']+'"] div.timer_2').showTimer({date: lastAction+delay1});
+						$('md-content[component-id="'+component['id']+'"] div.timer_3').showTimer({date: lastAction+delay1});
+						$('md-content[component-id="'+component['id']+'"] div.timer_4').showTimer({date: lastAction+delay1});
+					}
+					// TODO !9: Balance inverse apres Y minutes<br/>
+					else {
+						var isEnabled = scenarii[component['foreign_id_1']].enabled;
+						component['state'] = (isEnabled)?3:0; // activated or not.
+						if (component['foreign_id_2'].length > 0) {
+							isEnabled = scenarii[component['foreign_id_2']].enabled;
+							component['state_2'] = (isEnabled == true)?3:0; // activated or not.
+						}
+						if (component['foreign_id_3'].length > 0) {
+							isEnabled = scenarii[component['foreign_id_3']].enabled;
+							component['state_3'] = (isEnabled == true)?3:0; // activated or not.
+						}
+						if (component['foreign_id_4'].length > 0) {
+							isEnabled = scenarii[component['foreign_id_4']].enabled;
+							component['state_4'] = (isEnabled == true)?3:0; // activated or not.
+						}
+					}
+				}
+				
+			}
+		  }
+	  }).
+	  error(function(data, status, headers, config) {
+		$rootScope.$broadcast('RefreshError', data, status);
+	  });
+	
+};
+
+// Scenario Play action
+$scope.scenarioPlay = function(container_id, component_position) {
+	var component = $scope.elements['container_'+container_id]['components'][component_position];
+	
+	if (component['container_position'] != component_position) {
+		alert('container_position not aligned with real array index, please correct this!');
+		return;
+	}
+	
+	var scenario_id = component['foreign_id_1'],
+		component_id = component['id'];
+	if (!scenario_id) {
+		component['state'] = -1;
+	}
+	
+	// waiting for server response, so clean state
+	component['state'] = 1;
+	
+	var now = (Date.now()/1000);
+	var ts = now + (component['delay_1']*60);
+	
+	$http.post((component['delay_1']>0)?'{{ path("_set_schedule_myfox") }}':'{{ path("_set_sync_myfox") }}', {
+			home_key: {{home.getHomeKey}},
+			command: 'CMD_SET_SCENARIO_PLAY',
+			parameters: { '%scenario_id%': scenario_id },
+			component_update: component['id'],
+			when: ts,
+			last_action: now
+	  }).
+	  success(function(data, status, headers, config) {
+		// error in the success result...
+		if (data.status != "OK") {
+			$rootScope.$broadcast('ActionError', data, status);
+			component['state'] = -1;
+			$('md-content[component-id="'+component_id+'"] button').callbackGuiError();
+			return;
+		}
+		
+		// compute state
+		component['state'] = (Date.now()/1000 < ts)? 2 : (component['delay_2'] > 0)?3:0; // delay or active or normal.
+		component['last_action'] = now;
+		$('md-content[component-id="'+component_id+'"] button').callbackGuiSuccess();
+		
+		// after scenario play, should schedule second scenario play.
+		if (component['delay_2'] > 0) {
+			var scenario_id_2 = component['foreign_id_2'];
+			if (scenario_id_2 != null && scenario_id_2 != '') {
+				$http.post('{{ path("_set_schedule_myfox") }}', {
+					home_key: {{home.getHomeKey}},
+					command: 'CMD_SET_SCENARIO_PLAY',
+					parameters: { '%scenario_id%': scenario_id_2 },
+					component_update: component['id'],
+					when: ts+(component['delay_2']*60),
+					last_action: now
+			      }).
+			      success(function(data, status, headers, config) {
+			    	  if (component['delay_1'] == 0) {
+			    		  $('md-content[component-id="'+component_id+'"] div.timer').showTimer({date: ts+(component['delay_2']*60), onEnd: function() {
+								$scope.refreshComponents();
+							}});
+			    	  }
+			      }).
+				  error(function(data, status, headers, config) {
+					  $rootScope.$broadcast('ActionError', data, status);
+					  component['state'] = -1;
+					  $('md-content[component-id="'+component_id+'"] button').callbackGuiError();
+				  });
+			}
+		}
+		// delayed state
+		if (component['delay_1'] > 0) { // delay_1 exists, delayed scenario play action.
+			$('md-content[component-id="'+component_id+'"] div.timer').showTimer({date: ts, onEnd: function() {
+				$scope.refreshComponents();
+			}});
+		}
+	  }).
+	  error(function(data, status, headers, config) {
+		$rootScope.$broadcast('ActionError', data, status);
+		component['state'] = -1;
+		$('md-content[component-id="'+component_id+'"] button').callbackGuiError();
+	  });
+};
+
+//Scenario Activation action
+$scope.scenarioActivation = function(container_id, component_position, scenario_position) {
+	var component = $scope.elements['container_'+container_id]['components'][component_position];
+	
+	if (component['container_position'] != component_position) {
+		alert('container_position not aligned with real array index, please correct this!');
+		return;
+	}
+	
+	var scenario_id = component['foreign_id_'+scenario_position], // 1-leaded for this var!
+		component_id = component['id'],
+		state_suffix = (scenario_position==1)?"":"_"+scenario_position,
+		isRadioButtonMode = (component['option_1']>=1);
+	if (!scenario_id) {
+		component['state'] = -1;
+		component['state_2'] = -1;
+		component['state_3'] = -1;
+		component['state_4'] = -1;
+	}
+	
+	// waiting for server response, so clean state
+	if (isRadioButtonMode) {
+		component['state'] = 1;
+		component['state_2'] = 1;
+		component['state_3'] = 1;
+		component['state_4'] = 1;
+	} else component['state'+state_suffix] = 1;
+	
+	var now = (Date.now()/1000);
+	var ts = now + (component['delay_1']*60);
+	
+	$http.post('{{ path("_set_multiple_states_scenario_activation") }}', {
+		home_key: {{home.getHomeKey}},
+		scenario_position: scenario_position,
+		component: component['id'],
+		when: ts,
+		last_action: now
+	  }).
+	  success(function(data, status, headers, config) {
+		    // error in the success result...
+			if (data.status != "OK") {
+				$rootScope.$broadcast('ActionError', data, status);
+				component['state'] = -1;
+				component['state_2'] = -1;
+				component['state_3'] = -1;
+				component['state_4'] = -1;
+				$('md-content[component-id="'+component_id+'"] button:eq('+(scenario_position-1)+')').callbackGuiError();
+				return;
+			}
+			
+			// compute states
+		    var scenarii = data.payload.scenario_states;
+		    if (scenarii[component['foreign_id_1']] != null)component['state'] = scenarii[component['foreign_id_1']]? ( (Date.now()/1000 < ts)? 2 : 3 ) : 0;
+		    if (component['foreign_id_2'] && scenarii[component['foreign_id_2']] != null) component['state_2'] = scenarii[component['foreign_id_2']]? ( (Date.now()/1000 < ts)? 2 : 3 ) : 0;
+		    if (component['foreign_id_3'] && scenarii[component['foreign_id_3']] != null) component['state_3'] = scenarii[component['foreign_id_3']]? ( (Date.now()/1000 < ts)? 2 : 3 ) : 0;
+		    if (component['foreign_id_4'] && scenarii[component['foreign_id_4']] != null) component['state_4'] = scenarii[component['foreign_id_4']]? ( (Date.now()/1000 < ts)? 2 : 3 ) : 0;
+			component['last_action'] = now;
+			$('md-content[component-id="'+component_id+'"] button:eq('+(scenario_position-1)+')').callbackGuiSuccess();
+			
+			// delayed state
+			if (component['delay_1'] > 0) { // delay_1 exists, delayed activate action.
+				// Since this action can take a while and because secheduler is triggered every minute, we add 1 minute to the timer
+				$('md-content[component-id="'+component_id+'"] button:eq('+(scenario_position-1)+') div.timer').showTimer({date: ts+60, onEnd: function() {
+					$scope.refreshComponents();
+				}});
+			}
+	  }).
+	  error(function(data, status, headers, config) {
+		$rootScope.$broadcast('ActionError', data, status);
+		component['state'] = -1;
+		component['state_2'] = -1;
+		component['state_3'] = -1;
+		component['state_4'] = -1;
+		$('md-content[component-id="'+component_id+'"] button:eq('+(scenario_position-1)+')').callbackGuiError();
+	  });
+};
+
+
+//Heating Dashboard
+$scope.heatingDashboardMinMaxUpdate = function(oldValue, newValue, component, minMaxKey) {
+	$http.post('{{ path("_set_sync_myfox") }}', {
+		home_key: {{home.getHomeKey}},
+		command: 'MACRO_SET_SCENARII_TEMPERATURE',
+		parameters: {	'%component_id%': component['id'],
+						'%scenarii%': component['heating_dashboard']['scenarii_'+minMaxKey],
+						'%value%': newValue,
+						'%heating_dashboard_attribute%': 'scenarii_'+minMaxKey }
+	  }).
+	  success(function(data, status, headers, config) {
+		  // error in the success result...
+		  if (data.status != "OK") {
+			  $rootScope.$broadcast('ActionError', data, status);
+			  $('div#double-knob-'+component['id']).callbackGuiError();
+			  $scope.refreshComponents();
+			  return;
+		  }
+		  $('div#double-knob-'+component['id']).callbackGuiSuccess();
+		  var originalComponent = $scope.elements[component['container']]['components'][component['container_position']];
+		  originalComponent['heating_dashboard'][minMaxKey] = newValue;
+	  }).
+	  error(function(data, status, headers, config) {
+		  $rootScope.$broadcast('ActionError', data, status);
+		  $('div#double-knob-'+component['id']).callbackGuiError();
+		  $scope.refreshComponents();
+	  });
+};

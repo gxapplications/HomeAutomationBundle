@@ -1,0 +1,26 @@
+{% set scopeComponent = "elements['container_" ~ component.getContainer.id ~ "']['components'][" ~ component.getContainerPosition ~ "]" %}
+<md-content component-id="{{component.id}}" layout="column" layout-fill layout-align="space-between center">
+
+	<div layout="row" flex layout-fill layout-align="space-between center">
+		<div flex class="ratio-box-1-1" style="min-height:12em;">
+			<div id="double-knob-{{component.id}}" flex="50"
+				class="ratio-content" style="max-height:20em;"
+				title="{{component.title}}"></div>
+		</div>
+		
+		<div flex style="padding-left:1.2em;" hide show-gt-md>
+			TODO !3: information textuelles. cf brouillon dans Salon
+			<br/><br/>
+			TODO !3: bouton "forcer pendant 2h", cf brouillon dans Salon
+		</div>
+	</div>
+	
+	<div flex layout-fill style="padding-top:1.1em;">
+		<div id="planer-{{component.id}}" style="width:100%; height:3em;"></div>
+	</div>
+	
+	<div flex style="padding-top:1.1em;">
+		TODO !2: Travailler sur le planer en barrettes. -> module JQuery. Canvas ?
+	</div>
+	
+</md-content>
