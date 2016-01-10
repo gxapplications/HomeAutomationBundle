@@ -40,8 +40,8 @@ class SecurityController extends Controller
         
         return array(
             // last username entered by the user
-            'last_account_id' => ($homes[0])?$homes[0]->getAccount()->getId():'',
-        	'last_home_id'    => ($homes[0])?$homes[0]->getId():'',
+            'last_account_id' => (array_key_exists(0, $homes))?$homes[0]->getAccount()->getId():'',
+        	'last_home_id'    => (array_key_exists(0, $homes))?$homes[0]->getId():'',
         	'homes'			  => $homes,
         	'from403'		  => $from403
         );
