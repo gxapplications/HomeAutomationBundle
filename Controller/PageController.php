@@ -269,4 +269,39 @@ class PageController extends Controller
     		}
     	} else return array();
     }
+
+
+	/**
+	 * @Route("/accountInit", name="_account_init")
+	 * @Template()
+	 */
+	public function accountInitAction(Request $request)
+	{
+		$account = new Account();
+		$account->setAccountLogin('test@mail.com')->setName('test@mail.com');
+		$account->setClearAccountPassword('password', '123');
+		// pattern encoded
+		$factory = $this->get('security.encoder_factory');
+		$encoder = $factory->getEncoder($account);
+		$pattern = $encoder->encodePassword('123', $account->getSalt());
+		$account->setPattern($pattern);
+
+		// home
+		$home = new Home();
+		$home->setName('Default Home')->setHomeKey(1);
+		$home->setLastAccess(new \DateTime())->setAccount($account);
+		$account->addHome($home);
+
+		// page
+		$page = new Page();
+		$page->setName('Default Page')->setHome($home)->setLayout(Layouts::ONE_COL);
+		$home->setDefaultPage($page);
+
+		$em = $this->getDoctrine()->getManager();
+		$em->persist($account);
+		$em->persist($page); // no persist cascaded, so need to persist manually.
+		$em->flush();
+
+		return new Response('C tout bon !', 201);
+	}
 }
