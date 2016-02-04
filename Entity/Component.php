@@ -24,13 +24,6 @@ class Component
     /**
      * @var integer
      *
-     * @ORM\Column(name="container_position", type="integer")
-     */
-    private $container_position;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="type", type="integer")
      */
     private $type;
@@ -139,12 +132,6 @@ class Component
      * @ORM\Column(name="option_1", type="smallint", nullable=true, options={"unsigned"=true, "default"=0})
      */
     private $option_1 = 0;
-    
-    /**
-     * @ORM\ManyToOne(targetEntity="Container", inversedBy="components")
-     * @ORM\JoinColumn(name="container_id", referencedColumnName="id", onDelete="CASCADE")
-     */
-    private $container;
 
     /**
      * @var integer
@@ -192,31 +179,6 @@ class Component
         return $this->id;
     }
 
-    
-
-    /**
-     * Set container_position
-     *
-     * @param integer $containerPosition
-     * @return Component
-     */
-    public function setContainerPosition($containerPosition)
-    {
-        $this->container_position = $containerPosition;
-
-        return $this;
-    }
-
-    /**
-     * Get container_position
-     *
-     * @return integer 
-     */
-    public function getContainerPosition()
-    {
-        return $this->container_position;
-    }
-
     /**
      * Set type
      *
@@ -239,30 +201,6 @@ class Component
     {
         return $this->type;
     }
-
-    /**
-     * Set container
-     *
-     * @param \GXApplications\HomeAutomationBundle\Entity\Container $container
-     * @return Component
-     */
-    public function setContainer(\GXApplications\HomeAutomationBundle\Entity\Container $container = null)
-    {
-        $this->container = $container;
-
-        return $this;
-    }
-
-    /**
-     * Get container
-     *
-     * @return \GXApplications\HomeAutomationBundle\Entity\Container 
-     */
-    public function getContainer()
-    {
-        return $this->container;
-    }
-    
     
     public function to_json() {
     	return json_encode($this->to_array());

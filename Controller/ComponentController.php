@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use GXApplications\HomeAutomationBundle\Entity\MyfoxCommand;
 
+// FIXME !0: rework all this
 class ComponentController extends Controller
 {
 	
@@ -126,7 +127,7 @@ class ComponentController extends Controller
     	$componentData = $this->getRequest()->request->get("component");
     	
     	$component->setTitle($componentData['title'])->setDescription($componentData['description']);
-    	// TODO !8: sauvegarder l'icone
+    	// TODO !108: sauvegarder l'icone
     	
     	switch ($component->getType()) {
     		case 2: // scenario activation

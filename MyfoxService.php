@@ -124,7 +124,7 @@ class MyfoxService
 	
 	// Only in API(JSON) mode
 	private function retrieveToken($login, $password) {
-		// TODO !6 : cf doc suivante pour authentifier et retourner les tokens :
+		// TODO !106 : cf doc suivante pour authentifier et retourner les tokens :
 		// https://github.com/Cyril-E/MyFoxHC2_Basic_fonctions/blob/master/myFox.php
 		// en cas de fail, throw Exception.
 		//throw new \Exception('Client_ID:'.$this->clientId." Client_Secret:".$this->clientSecret." Login:".$login." Password:".$password); // FIXME
@@ -155,7 +155,7 @@ class MyfoxService
 						continue;
 					}
 					if ($token->getValidity() < $now) {
-						// TODO !6 : token perimee, on le refresh chez Myfox !
+						// TODO !106 : token perimee, on le refresh chez Myfox !
 					}
 					$validToken = $token;
 				}
@@ -389,7 +389,7 @@ class MyfoxService
 		$command->setState(MyfoxCommand::STATE_IN_PROGRESS);
 		if (!is_numeric($command->getCommand())) { // is CMD case, not a MACRO
 			if (!$this->httpEmulation) {
-				// TODO !7 : jouer maintenant, en synchrone,et retourner le result en RAW sans traitement. En cas d'erreur, throw .*Exception
+				// TODO !107 : jouer maintenant, en synchrone,et retourner le result en RAW sans traitement. En cas d'erreur, throw .*Exception
 			} else {
 				$this->container->get('logger')->info('Trying to send Http query to Myfox: '.$command->getCommand().'...');
 				
@@ -410,7 +410,7 @@ class MyfoxService
 			}
 		} else { // is MACRO case
 			if (!$this->httpEmulation) {
-				// TODO !7 : jouer maintenant, en synchrone,et retourner le result en RAW sans traitement. En cas d'erreur, throw .*Exception
+				// TODO !107 : jouer maintenant, en synchrone,et retourner le result en RAW sans traitement. En cas d'erreur, throw .*Exception
 			} else {
 				$this->container->get('logger')->info('Trying to execute MACRO #'.$command->getCommand().'...');
 				

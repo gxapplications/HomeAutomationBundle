@@ -33,7 +33,7 @@ class MyfoxCommand
 	const CMD_SET_SCENARIO_ENABLE = "/site/%home_key%/scenario/%scenario_id%/enable";
 	const CMD_SET_SCENARIO_DISABLE = "/site/%home_key%/scenario/%scenario_id%/disable";
 	
-	//TODO !9 : mettre les commandes ici... et dans le grand tableau dessous
+	//TODO !109 : mettre les commandes ici... et dans le grand tableau dessous
 	// https://api.myfox.me/dev/documentation
 	
 	const MACRO_SET_SCENARII_TEMPERATURE = 1;
@@ -185,7 +185,7 @@ class MyfoxCommand
 							$step++;
 							$rawResult = MyfoxService::execCurl($curlHandler, $logger, 'https://myfox.me/scenario/'.$homeKey.'/manage/'.$scenario.'/1', false);
 							$nextValues = array('label' => "TODO", 'scData' => "TODO");
-							// TODO !0 : parse PHPQuery for label and scData
+							// TODO !100 : parse PHPQuery for label and scData
 							
 							
 							// step 2: POST to "https://myfox.me/scenario/%home_key%/manage/%scenario_id%/2" with label and scData
@@ -196,7 +196,7 @@ class MyfoxCommand
 									'https://myfox.me/scenario/'.$homeKey.'/manage/'.$scenario.'/2',
 									true, $nextValues); // FIXME: doit-on changer le Content-type de l'entete ? option curl pour ca si besoin.
 							$nextValues = array('type' => "TODO", 'scData' => "TODO");
-							// TODO !0 : parse PHPQuery for type and scData
+							// TODO !100 : parse PHPQuery for type and scData
 							
 							
 							// step 3: POST to "https://myfox.me/scenario/%home_key%/manage/%scenario_id%/3" with type and scData
@@ -207,7 +207,7 @@ class MyfoxCommand
 							//		input:text:not([disabled])
 							//		(but modify those who are input:text[name*="[4]["][name*="][value]"]:not([disabled]) with newTemperature.
 							$step++;
-							// TODO !0
+							// TODO !100
 							
 							
 							// step 4: POST to "https://myfox.me/scenario/%home_key%/manage/%scenario_id%/4" with retrieved fields and modified temperature.
@@ -217,12 +217,12 @@ class MyfoxCommand
 							//		input:radio[checked]:not([disabled])
 							//		input:text:not([disabled])
 							$step++;
-							// TODO !0
+							// TODO !100
 							
 							// step 5: POST to "https://myfox.me/scenario/%home_key%/manage/%scenario_id%/5" with retrieved fields.
 							// -> scData = $('form#scenarioForm input[name="scData"]').val() MAIS ON N'EN FAIT RIEN !
 							$step++;
-							// TODO !0
+							// TODO !100
 							
 						} catch (\Exception $e) {
 							$logger->error('Failed to send Http query #'.$step.' for MACRO_SET_SCENARII_TEMPERATURE.');

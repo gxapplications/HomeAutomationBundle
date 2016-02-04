@@ -25,81 +25,184 @@
 		'@GXHomeAutomationBundle/Resources/public/js/jquery.planer-0.1.js'
 		'@GXHomeAutomationBundle/Resources/public/js/jquery.countdown.js'
 		'@GXHomeAutomationBundle/Resources/public/js/utils.js'
+		'@GXAngularMaterialBundle/Resources/public/js/gridList.js'
+		'@GXAngularMaterialBundle/Resources/public/js/jquery.gridList.js'
+		'@GXAngularMaterialBundle/Resources/public/js/jquery.ui.touch-punch.min.js'
+		'@GXAngularMaterialBundle/Resources/public/js/gx-grid-stack.js'
 		 %} {# filter='?closure' #}
 	    <script src="{{ asset_url }}"></script>
 	{% endjavascripts %}
 	<script>
-		{{ include('GXHomeAutomationBundle:Page:ng-controllers.js.twig', {'home': home, 'page': page, 'layouts': layouts, 'alarm_status': alarm_status}) }}
+		var gridStack = null;
+		var loaderUrl = 'gridlist_card'; // TODO !
+		var app = angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
+
+		app
+		{{ include('GXHomeAutomationBundle::ng-config.js.twig') }}
+		.controller("MainCtrl", function($rootScope, $scope, $mdSidenav, $window) {
+
+			// toolbar actions
+			$scope.toolbar = {
+				logout: function() {
+					$window.location.href = '{{ path("_home_logout") }}';
+				},
+				goToPage: function(pageId) {
+					$window.location.href = '{{ path("_home_page_main", {'home_id': home.id, 'page_id': 999999 }) }}'.replace(/999999/, pageId);
+				}
+			};
+
+			// edit mode
+			$rootScope.editMode = {
+				show: false,
+				columnCount: {{ page.getLayout() }}
+			};
+			$scope.editMode = $rootScope.editMode;
+			$scope.$watch('editMode.columnCount', function() {
+				if (gridStack !== null) // cancel effect at init
+					gridStack.setLanes($scope.editMode.columnCount);
+			});
+
+			// refresh features
+			$rootScope.refresh = []; // functions to execute to force refresh of a card.
+			this.refreshAll = function() {
+				for (i = 0; i < $rootScope.refresh.length; i++) {
+					if (typeof $rootScope.refresh[i] == 'function')
+						$rootScope.refresh[i]();
+				}
+			};
+
+			// sidenav new widgets
+			$rootScope.addWidgetsPanel = {
+				toggle: function() {
+					$mdSidenav('addWidgetsSidenav').toggle();
+				},
+				isOpen: function() {
+					return $mdSidenav('addWidgetsSidenav').isOpen();
+				}
+			};
+			this.toggleAddWidgets = $scope.addWidgetsPanel.toggle;
+		});
+
+		// Angular Add widgets sidenav controller
+		app.controller('AddWidgetsCtrl', function ($scope, $mdSidenav) {
+			$scope.close = function () {
+				$mdSidenav('addWidgetsSidenav').close();
+			};
+		});
+
+		// init
+		$(function() {
+			// TODO
+		});
 	</script>
 {% endblock %}
 
 {% block body %}
+<div layout="column" layout-fill style="overflow:hidden;" ng-controller="MainCtrl as MainCtrl">
 
-<div layout="column" layout-fill style="overflow:hidden;">
+	<md-toolbar md-scroll-shrink>
+		<div class="md-toolbar-tools" ng-cloak>
 
-<md-toolbar md-scroll-shrink class="page-header">
-	<header ng-controller="HeaderControls" class="page-header md-whiteframe-z1 ng-hide" ng-show="!loading"
-			ng-class="{'off': alarm.status == 'disarmed', 'partial': alarm.status == 'partial', 'on': alarm.status == 'armed'}">
-	   	<div class="top-right-controls">
-			<md-button class="md-fab md-hue-4 md-primary" aria-label="Edit mode" ng-click="toggleEditMode($event)" ng-class="{'md-warn': editMode}">
-				<img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_edit.png') }}" class="fab-button" />
+			<md-button aria-label="Logout" tabindex="501">
+				<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_unread.png') }}" width="24" height="24" /></md-icon>
+				(0)
 			</md-button>
-			<md-button class="md-fab md-hue-4 md-primary" aria-label="Parameters" ng-click="showParameters($event)">
-				<img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_settings.png') }}" class="fab-button" />
-			</md-button>
-		</div>
-	
-		<md-whiteframe class="header-controls" layout="vertical" layout-md="horizontal" layout-align="space-around center">
-			<div>
-				<div ng-show="!editMode" class="edit-animate-show" style="font-size:1.6em;text-shadow: 3px 2px 3px rgba(0,0,0,.32);">
-					{{ '{{' }} page.name {{ '}}' }} <small>({{home.name}})</small>
-				</div>
-				<div ng-show="editMode" class="edit-animate-show" style="position:relative; bottom:10px;">
-					<md-input-container>
-			      		<label>Page name</label>
-			      		<input ng-model="page.name" required name="page_name">
-			    	</md-input-container>
-				</div>
-			</div>
-			<md-card class="lighter edit-animate-show" ng-show="editMode">
-				<label for="layout_select">Layout: </label>
-				<select id="layout_select" ng-model="layout" ng-options="layout.name for (id , layout) in layouts"
-					ng-change="justChanged()"
-					label="Layout"></select>
-			</md-card>
-		</md-whiteframe>
-		
-		<div class="header-status" ng-show="!editMode">
-			<md-button class="md-fab md-accent md-hue-1" ng-class="{'gx-translucent': alarm.status != 'disarmed'}" aria-label="Unarmed" ng-click="setStatus($event, 'disarmed')">
-				<img src="{{ asset('bundles/gxhomeautomation/images/status_off.png') }}" class="fab-button" />
-			</md-button>
-			<md-button class="md-fab md-accent md-hue-2" ng-class="{'gx-translucent': alarm.status != 'partial'}" aria-label="Partially armed" ng-click="setStatus($event, 'partial')">
-				<img src="{{ asset('bundles/gxhomeautomation/images/status_partial.png') }}" class="fab-button" />
-			</md-button>
-			<md-button class="md-fab md-accent md-hue-3" ng-class="{'gx-translucent': alarm.status != 'armed'}" aria-label="Fully armed" ng-click="setStatus($event, 'armed')">
-				<img src="{{ asset('bundles/gxhomeautomation/images/status_on.png') }}" class="fab-button" />
+			{# TODO !110: notif center et icones de notifs ! #}
+			[notifs]
+
+			<span flex></span>
+			<h2>
+				<md-icon class="icon-img-centered"><img src="{{ asset('bundles/gxangularmaterial/images/home.png') }}" width="24" height="24" /></md-icon>
+				<span>{{home.name}} ~ {{page.name}}</span>
+			</h2>
+			<span flex></span>
+
+			{# TODO !110: si trop nombreux, doit passer dans un menu deroulant ! #}
+			{% for other_page in home.getPages() %}
+				{% if other_page.id != page.id %}
+					<md-button aria-label="Homes" ng-click="toolbar.goToPage({{other_page.id}})" tabindex="502">
+						<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_next_item.png') }}" width="24" height="24" /></md-icon>
+						{{other_page.name}}
+					</md-button>
+				{% endif %}
+			{% endfor %}
+
+			<md-button aria-label="Logout" ng-click="toolbar.logout()" tabindex="503">
+				<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_lock_power_off.png') }}" width="24" height="24" /></md-icon>
+				Logout
 			</md-button>
 		</div>
-		
-		<div layout="row" layout-margin class="header-dropzone" ng-show="editMode">
-			<md-whiteframe class="md-whiteframe-z1" flex layout-align="center end" id="delete-dropzone">
-   			</md-whiteframe>
-			<md-whiteframe class="md-whiteframe-z1" flex layout-align="center end" id="edit-dropzone">
-   			</md-whiteframe>
+	</md-toolbar>
+
+	<md-content flex>
+		<div flex>
+			LA !
 		</div>
-	</header>
-</md-toolbar>
+	</md-content>
 
-<md-content flex class="page-layout">
+	<md-fab-toolbar class="md-fab-bottom-right" style="width:100%" md-direction="left" ng-cloak>
+		<md-fab-trigger class="align-with-text">
+			<md-button aria-label="menu" class="md-fab" ng-class="{{ '{' }}'md-hue-2': editMode.show == false, 'md-hue-1': editMode.show == true{{ '}' }}">
+				<md-icon><img class="fab-button" src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_edit.png') }}" width="24" height="24" /></md-icon>
+			</md-button>
+		</md-fab-trigger>
+		<md-toolbar>
+			<md-fab-actions class="md-toolbar-tools">
+				<md-switch class="md-hue-1" aria-label="Switch to edit mode" ng-model="editMode.show">
+					Edit mode
+				</md-switch>
+				<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
-	<div ng-controller="LayoutControls">
-		<div ng-include="layout_url" onload="layoutLoaded();" ng-show="!layout_loading"></div>
-		<div ng-show="layout_loading" layout="column" layout-align="center center">
-			<md-progress-circular md-mode="indeterminate" style="margin-top: 6em;"></md-progress-circular>
-		</div>
-	</div>
+				<span ng-show="editMode.show">&nbsp;Colmuns</span>
+				<md-slider ng-show="editMode.show" flex="no-shrink" style="width: 10em;"
+						   md-discrete ng-model="editMode.columnCount" step="1" min="3" max="7" aria-label="columnCount">
+				</md-slider>
+				<span ng-show="editMode.show">&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
-</md-content>
+				<md-button aria-label="Add card" ng-click="MainCtrl.toggleAddWidgets()">
+					<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_add_to_queue.png') }}" width="24" height="24" /></md-icon>
+					Add card
+				</md-button>
+
+				<md-button aria-label="Refresh" ng-click="MainCtrl.refreshAll()">
+					<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_refresh.png') }}" width="24" height="24" /></md-icon>
+					Refresh
+				</md-button>
+			</md-fab-actions>
+		</md-toolbar>
+	</md-fab-toolbar>
+
 </div>
+
+<md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="addWidgetsSidenav" ng-cloak>
+	<md-toolbar class="md-theme-light">
+		<h1 class="md-toolbar-tools">Add a widget</h1>
+	</md-toolbar>
+	<md-list ng-controller="AddWidgetsCtrl as AddWidgetsCtrl">
+		<md-list-item ng-click="navigateTo('data usage', $event)">
+			<md-icon md-svg-icon="cached"></md-icon>
+			<p>Data Usage</p>
+		</md-list-item>
+		<md-divider></md-divider>
+		<md-list-item ng-click="navigateTo('data usage', $event)">
+			<md-icon md-svg-icon="cached"></md-icon>
+			<p>Data Usage</p>
+		</md-list-item>
+		<md-list-item ng-click="navigateTo('data usage', $event)">
+			<md-icon md-svg-icon="cached"></md-icon>
+			<p>Data Usage</p>
+		</md-list-item>
+		<md-list-item ng-click="navigateTo('data usage', $event)">
+			<md-icon md-svg-icon="cached"></md-icon>
+			<p>Data Usage</p>
+		</md-list-item>
+		<md-divider></md-divider>
+		<md-list-item>
+			<md-button ng-click="close()">
+				Close Sidenav Right
+			</md-button>
+		</md-list-item>
+	</md-list>
+</md-sidenav>
 
 {% endblock %}

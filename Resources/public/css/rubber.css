@@ -1,21 +1,22 @@
 @CHARSET "UTF-8";
 
 form div.rubber {
-	background: rgba(56,74,82, 1);
-	padding: 0.6em !important;
+	background: #424242;
+	padding: 1.4em 0.6em 0.6em !important;
 	margin-bottom: 2em;
 	box-shadow: 3px 5px 6px -1px rgba(0, 0, 0, 0.6);
+	min-height: 6.4em;
 }
 form div.rubber-right {
 	width: 346px;
 	margin-top: -10px;
-	background: rgba(56,74,82, 1);
+	background: #424242;
 	padding: 1em 1em 1.4em !important;
 	box-shadow: 5px 0 6px -1px rgba(0, 0, 0, 0.6);
 }
 
 form div.login-rubber {
-	background: rgba(56,74,82, 1);
+	background: #424242;
 	padding: 1em 1em 1.4em !important;
 	margin-bottom: 2em;
 	box-shadow: 3px 5px 6px -1px rgba(0, 0, 0, 0.6);
@@ -24,19 +25,23 @@ form div.login-rubber {
 form div.login-rubber-right {
 	min-width: 346px;
 	margin-top: -10px;
-	background: rgba(56,74,82,1);
+	background: #424242;
 	padding: 1em 1em 1.4em !important;
 	box-shadow: 5px 0 6px -1px rgba(0, 0, 0, 0.6);
 }
 
-form div.login-rubber md-radio-button {
-	padding: 1em;
+form md-radio-group .md-button {
+	padding: 0.5em 1em;
 	margin: 0.6em;
+	display: block;
+	width: 100%
+}
+form md-radio-group md-radio-button.md-button {
 	text-align: left;
 }
 
 form div.login-rubber button.md-button {
-	padding: 1em;
+	padding: 0.5em 1em;
 	margin: 0.6em;
 }
 

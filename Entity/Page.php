@@ -37,26 +37,20 @@ class Page
     private $home;
     
     /**
-     * @var ArrayCollection
+     * @var string
      *
-     * @ORM\OneToMany(targetEntity="Container", mappedBy="page", cascade={"all"}, orphanRemoval=true)
-     * @ORM\OrderBy({"layout_position" = "ASC"})
+     * @ORM\Column(name="positions", type="string", length=512, nullable=true)
      */
-    private $containers;
+    private $positions = null;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="layout", type="integer")
+     * @ORM\Column(name="layout", type="integer", nullable=false, options={"unsigned"=true, "default"=4})
      */
-    private $layout;
-    
-    
-    
-    public function __construct()
-    {
-    	$this->containers = new ArrayCollection();
-    }
+    private $layout = 4;
+
+
     
     /**
      * Get id
@@ -114,38 +108,28 @@ class Page
     {
         return $this->home;
     }
-    
+
     /**
-     * Add containers
+     * Set positions
      *
-     * @param \GXApplications\HomeAutomationBundle\Entity\Container $containers
+     * @param string $positions
      * @return Page
      */
-    public function addContainer(\GXApplications\HomeAutomationBundle\Entity\Container $containers)
+    public function setPositions($positions)
     {
-    	$this->containers[] = $containers;
-    
-    	return $this;
+        $this->positions = $positions;
+
+        return $this;
     }
-    
+
     /**
-     * Remove containers
+     * Get positions
      *
-     * @param \GXApplications\HomeAutomationBundle\Entity\Container $containers
+     * @return string
      */
-    public function removeContainer(\GXApplications\HomeAutomationBundle\Entity\Container $containers)
+    public function getPositions()
     {
-    	$this->containers->removeElement($containers);
-    }
-    
-    /**
-     * Get containers
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getContainers()
-    {
-    	return $this->containers;
+        return $this->positions;
     }
 
     /**

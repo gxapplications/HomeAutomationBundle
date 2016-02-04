@@ -21,11 +21,10 @@
 	    <script src="{{ asset_url }}"></script>
 	{% endjavascripts %}
 	<script>
-		angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
+		var app = angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
 	
-		// Apply default configurations
+		app
 		{{ include('GXHomeAutomationBundle::ng-config.js.twig') }}
-	
 		.controller("ManagerControls", function($scope, $http, $window, $mdBottomSheet, $mdToast) {
 			$scope.loading = true;
 			$scope.querying = false;
@@ -141,9 +140,11 @@
 		      		ng-class="{ 'md-primary': (account.home_id == '{{ home.id }}') }"
 		      		value="{{ home.id }}" ng-click="changeHome()">{{ home.name }}</md-radio-button>
 		      {% endfor %}
+
+				<md-button ng-click="goToUrl('{{ path("_account_creation") }}')">Create new</md-button>
 		    </md-radio-group>
 		    
-		    <md-button ng-click="goToUrl('{{ path("_account_creation") }}')">Create new</md-button>
+
 		</div>
 	</div>
 	<div layout="column" layout-align="center center" class="login-rubber-right">

@@ -68,28 +68,9 @@ class PageController extends Controller
     	$em = $this->getDoctrine()->getManager();
     	$home->setLastAccess(new \DateTime());
     	$em->persist($home);
-    	
-    	
-    	// prepare layouts list for edit mode dropdown
-    	$layouts = array(); $layout_idx = 0; $idx = 0;
-    	foreach (Layouts::enum() as $id) {
-    		$layouts[] = array('id' => $id, 'name' => Layouts::$constNames[$id], 'cols' => Layouts::$constColumnCount[$id]);
-    		if ($page->getLayout() == $id) $layout_idx = $idx;
-    		$idx++;
-    	}
-    	
-    	// MyFox service
-    	$myfox = $this->get('gx_home_automation.myfox');
-    	
     	$em->flush();
     	
-    	try {
-    		$alarm_status = $myfox->getAlarmStatus($home->getHomeKey());
-    	} catch (\Exception $e) {
-    		$alarm_status = null;
-    	}
-    	
-    	return array('home' => $home, 'page' => $page, 'layouts' => $layouts, 'layout' => $layout_idx, 'alarm_status' => $alarm_status);
+    	return array('home' => $home, 'page' => $page);
     }
     
     /**
@@ -105,6 +86,8 @@ class PageController extends Controller
     	$pageData = $this->getRequest()->request->get("page");
     	
     	$page->setName($pageData['name']);
+		$page->setLayout($pageData['layout']);
+		$page->setPositions($pageData['positions']);
     	$em->persist($page);
     
     	$em->flush();
@@ -144,7 +127,7 @@ class PageController extends Controller
     	
     	$homes = $em->getRepository('GXHomeAutomationBundle:Home')->findBy(array(), array('last_access' => 'DESC'));
     	return array(
-    			'homes'			  => $homes,
+    			'homes' => $homes,
     	);
     }
     
@@ -180,7 +163,7 @@ class PageController extends Controller
     		
     		// page
     		$page = new Page();
-    		$page->setName($data['page_label'])->setHome($home)->setLayout(Layouts::ONE_COL);
+    		$page->setName($data['page_label'])->setHome($home)->setLayout(4);
     		$home->setDefaultPage($page);
     		
     		$em = $this->getDoctrine()->getManager();
@@ -196,42 +179,6 @@ class PageController extends Controller
     	// find last account inserted for prefilled form
     	$accounts = $em->getRepository('GXHomeAutomationBundle:Account')->findBy(array(),array('id'=>'DESC'),1);
     	return array("last_email" => (sizeof($accounts)>0)?($accounts[0]->getAccountLogin()):"");
-    }
-    
-    /**
-     * @Route("/md_parameters_bottom_sheet", name="_md_parameters_bottom_sheet")
-     * @Template()
-     * @Secure(roles="ROLE_USER")
-     */
-    public function mdParametersBottomSheetAction(Request $request)
-    {
-    	if ($request->isMethod('POST')) {
-    		$em = $this->getDoctrine()->getManager();
-    		$action = $request->get('action_id', null);
-    		
-    		switch($action) {
-    			
-    			case 'delete_home':
-    				$homeId = $request->get("home_id");
-    				if (!$homeId) throw new \Exception("Home not found.");
-    				$home = $em->getRepository('GXHomeAutomationBundle:Home')->find($homeId);
-    				if (!$home) throw new \Exception("Home not found.");
-    				
-    				/* @var $home Home */
-    				$account = $home->getAccount();
-    				// if account is about to loose its last home, remove it too.
-    				if (sizeof($account->getHomes()) == 1) $em->remove($account);
-    				
-    				$em->remove($home);
-    				
-    				$em->flush();
-    				return new Response(1);
-    				break;
-    				
-    			default:
-    				return array();
-    		}
-    	} else return array();
     }
     
     /**
@@ -272,6 +219,7 @@ class PageController extends Controller
 
 
 	/**
+	 * // FIXME !0: temp, delete it!
 	 * @Route("/accountInit", name="_account_init")
 	 * @Template()
 	 */
@@ -294,7 +242,7 @@ class PageController extends Controller
 
 		// page
 		$page = new Page();
-		$page->setName('Default Page')->setHome($home)->setLayout(Layouts::ONE_COL);
+		$page->setName('Default Page')->setHome($home)->setLayout(4);
 		$home->setDefaultPage($page);
 
 		$em = $this->getDoctrine()->getManager();

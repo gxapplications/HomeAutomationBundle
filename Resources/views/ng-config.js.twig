@@ -1,48 +1,21 @@
-
-.config(function ($httpProvider, $mdThemingProvider) {
-	var gxHomePaletteMap = $mdThemingProvider.extendPalette('blue-grey', {
-		'900': 'ECEFF1',
-		'800': 'CFD8DC',
-		'700': 'B0BEC5',
-		'600': '90A4AE',
-		'500': '78909C',
-		'400': '607D8B',
-		'300': '546E7A',
-		'200': '455A64',
-		'100': '37474F',
-		'50': '263238',
-		'A700': '80D8FF',
-		'A400': '40C4FF',
-		'A200': '00B0FF',
-		'A100': '0091EA',
-		'contrastDefaultColor': 'dark',
-		'contrastLightColors': ['50', '100', '200', '300', '400', '500', 'A100', 'A200']
-	  });
-	$mdThemingProvider.definePalette('gxHomePalette', gxHomePaletteMap);
-	
-	var gxRainbowPaletteMap = $mdThemingProvider.extendPalette('gxHomePalette', {
-		'50': '4CAF50', // green
-		'100': 'FFC107', // amber
-		'200': 'F44336', // red
-	  });
-	$mdThemingProvider.definePalette('gxRainbowPalette', gxRainbowPaletteMap);
-	
-	
+.config(function($mdThemingProvider, $controllerProvider, $httpProvider) {
 	$mdThemingProvider.theme('default')
-      .primaryPalette('gxHomePalette')
-      .accentPalette('gxRainbowPalette', {
-    	  'hue-1': '50',
-    	  'hue-2': '100',
-    	  'hue-3': '200',
-      })
-      .warnPalette('red')
-      .backgroundPalette('gxHomePalette');
-      
+		.primaryPalette('teal', {'default': '900'})
+		.warnPalette('red')
+		.accentPalette('light-green', {
+			'default': '600',
+			'hue-1': '700',
+			'hue-2': '900',
+			'hue-3': 'A700'
+		})
+		.backgroundPalette('grey', {'default': '900'})
+		.dark();
+	app.controllerProvider = $controllerProvider;
+
 	// Do not encode POST data in Angular JSON format, but use jquery POST parameters format (query string)
-    $httpProvider.defaults.transformRequest = function(data){
-        if (data === undefined) return data;
-        return $.param(data);
-    }
-    $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+	$httpProvider.defaults.transformRequest = function(data){
+		if (data === undefined) return data;
+		return $.param(data);
+	}
+	$httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
 })
-	

@@ -21,11 +21,10 @@
 	    <script src="{{ asset_url }}"></script>
 	{% endjavascripts %}
 	<script>
-		angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
+		var app = angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
 	
-		// Apply default configurations
+		app
 		{{ include('GXHomeAutomationBundle::ng-config.js.twig') }}
-	
 		.controller("LoginControls", function($scope, $http, $window) {
 			$scope.loading = true;
 			$scope.querying = false;
