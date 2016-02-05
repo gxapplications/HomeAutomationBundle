@@ -54,7 +54,7 @@
 			// edit mode
 			$rootScope.editMode = {
 				show: false,
-				columnCount: {{ page.getLayout() }}
+				columnCount: {{page.getLayout()}}
 			};
 			$scope.editMode = $rootScope.editMode;
 			$scope.$watch('editMode.columnCount', function() {
@@ -92,7 +92,25 @@
 
 		// init
 		$(function() {
-			// TODO
+			gridStack = $('#grid').gridStack({
+				matrix: {{page.positions|default("[ {id: 1, w: 1, h: 1, x: 0, y: 0}, {id: 2, w: 1, h: 2, x: 0, y: 1}, {id: 3, w: 2, h: 2, x: 1, y: 0} ]")}},
+				onChange: function(changedItems, matrix) {
+					// TODO !0: save data server side.
+					console.log(changedItems);
+					console.log(matrix);
+				},
+				lanes: {{page.getLayout()}},
+				elementPrototype: 'li.position-card',
+				elementLoaderUrl: loaderUrl,
+				draggableParams: {
+					handle: '.handle',
+					helper: 'original'
+				}
+			});
+			$('#screen-shield').html('').css('background', 'transparent');
+			window.setTimeout(function() {
+				$('#screen-shield').remove();
+			}, 2000);
 		});
 	</script>
 {% endblock %}
@@ -134,9 +152,20 @@
 		</div>
 	</md-toolbar>
 
-	<md-content flex>
+	<md-content xstyle="right:-18px;" flex>
 		<div flex>
-			LA !
+			<ul id="grid" class="grid">
+				<li class="position-highlight">
+					<div class="inner md-whiteframe-1dp"></div>
+				</li>
+				<li class="position-card">
+					<md-card class="md-whiteframe-6dp inner">
+						<div flex layout="row" layout-align="center center">
+							<md-progress-circular md-diameter="128" md-mode="indeterminate"></md-progress-circular>
+						</div>
+					</md-card>
+				</li>
+			</ul>
 		</div>
 	</md-content>
 
@@ -204,5 +233,7 @@
 		</md-list-item>
 	</md-list>
 </md-sidenav>
+
+{{ include('GXHomeAutomationBundle::loading-shield.html.twig') }}
 
 {% endblock %}

@@ -1,0 +1,54 @@
+<div id="screen-shield" style="position:absolute;left:0;right:0;top:0;bottom:0;background:#181818;z-index:100;-webkit-transition:background 2s;transition:background 2s;">
+    <div class="loading">
+        <!-- We make this div spin -->
+        <div class="spinner">
+            <!-- Mask of the quarter of circle -->
+            <div class="mask">
+                <!-- Inner masked circle -->
+                <div class="maskedCircle"></div>
+            </div>
+        </div>
+    </div>
+    <style>
+        /* Animation keyframes - you need to add prefixes */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Loading animation container */
+        #screen-shield .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 56px;
+            height: 56px;
+            margin: -28px 0 0 -28px;
+        }
+
+        /* Spinning circle (inner circle) */
+        #screen-shield .loading .maskedCircle {
+            width: 40px;
+            height: 40px;
+            border-radius: 24px;
+            border: 6px solid #cccccc;
+        }
+
+        /* Spinning circle mask */
+        #screen-shield .loading .mask {
+            width: 24px;
+            height: 24px;
+            overflow: hidden;
+        }
+
+        /* Spinner */
+        #screen-shield .loading .spinner {
+            position: absolute;
+            left: 1px;
+            top: 1px;
+            width: 52px;
+            height: 52px;
+            animation: spin 1s infinite linear;
+        }
+    </style>
+</div>

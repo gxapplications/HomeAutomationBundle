@@ -23,7 +23,7 @@ class PageController extends Controller
      * @Route("/", name="_home")
      * @Secure(roles="ROLE_USER")
      */
-    public function indexAction(Request $request)
+    public function indexAction()
     {
     	$em = $this->getDoctrine()->getManager();
     	
@@ -79,15 +79,18 @@ class PageController extends Controller
      * @ParamConverter ("page", class="GXHomeAutomationBundle:Page", options={"id" = "page_id"})
      * @Secure(roles="ROLE_USER")
      */
-    public function commitPageAction(Page $page)
+    public function commitPageAction(Page $page, Request $request)
     {
     	$em = $this->getDoctrine()->getManager();
     	 
-    	$pageData = $this->getRequest()->request->get("page");
-    	
-    	$page->setName($pageData['name']);
-		$page->setLayout($pageData['layout']);
-		$page->setPositions($pageData['positions']);
+    	$pageData = $request->request->get("page");
+
+		if (array_key_exists('name', $pageData))
+    		$page->setName($pageData['name']);
+		if (array_key_exists('layout', $pageData))
+			$page->setLayout($pageData['layout']);
+		if (array_key_exists('positions', $pageData))
+			$page->setPositions($pageData['positions']);
     	$em->persist($page);
     
     	$em->flush();
@@ -216,40 +219,4 @@ class PageController extends Controller
     		}
     	} else return array();
     }
-
-
-	/**
-	 * // FIXME !0: temp, delete it!
-	 * @Route("/accountInit", name="_account_init")
-	 * @Template()
-	 */
-	public function accountInitAction(Request $request)
-	{
-		$account = new Account();
-		$account->setAccountLogin('test@mail.com')->setName('test@mail.com');
-		$account->setClearAccountPassword('password', '123');
-		// pattern encoded
-		$factory = $this->get('security.encoder_factory');
-		$encoder = $factory->getEncoder($account);
-		$pattern = $encoder->encodePassword('123', $account->getSalt());
-		$account->setPattern($pattern);
-
-		// home
-		$home = new Home();
-		$home->setName('Default Home')->setHomeKey(1);
-		$home->setLastAccess(new \DateTime())->setAccount($account);
-		$account->addHome($home);
-
-		// page
-		$page = new Page();
-		$page->setName('Default Page')->setHome($home)->setLayout(4);
-		$home->setDefaultPage($page);
-
-		$em = $this->getDoctrine()->getManager();
-		$em->persist($account);
-		$em->persist($page); // no persist cascaded, so need to persist manually.
-		$em->flush();
-
-		return new Response('C tout bon !', 201);
-	}
 }
