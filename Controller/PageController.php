@@ -2,6 +2,7 @@
 
 namespace GXApplications\HomeAutomationBundle\Controller;
 
+use GXApplications\HomeAutomationBundle\Components;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -69,8 +70,8 @@ class PageController extends Controller
     	$home->setLastAccess(new \DateTime());
     	$em->persist($home);
     	$em->flush();
-    	
-    	return array('home' => $home, 'page' => $page);
+
+    	return array('home' => $home, 'page' => $page, 'component_types' => Components::$constNames);
     }
     
     /**
@@ -90,7 +91,7 @@ class PageController extends Controller
 		if (array_key_exists('layout', $pageData))
 			$page->setLayout($pageData['layout']);
 		if (array_key_exists('positions', $pageData))
-			$page->setPositions($pageData['positions']);
+			$page->setPositions(json_encode($pageData['positions']));
     	$em->persist($page);
     
     	$em->flush();

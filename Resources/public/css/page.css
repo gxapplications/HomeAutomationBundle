@@ -90,27 +90,6 @@ div.gridlist-card div.handle, div.gridlist-card div.md-fab-toolbar-content {
 
 
 /* FIXME !0: d'ici, voir si on en a encore besoin... */
-md-toolbar.page-header {
-	background-image: url('../images/doorstep-background.jpg');
-	background-position: center;
-}
-
-header.page-header {
-	padding: 1em;
-}
-header.page-header.off {
-	background-color: rgba(43, 175, 43, 0.4);
-}
-header.page-header.partial {
-	background-color: rgba(255, 167, 38, 0.6);
-}
-header.page-header.on {
-	background-color: rgba(232, 78, 64, 0.8);
-}
-div.header-status button.gx-translucent {
-	opacity: 0.5;
-}
-
 md-card.lighter {
 	background-color: #90A4AE; /* Blue grey 300 */
 	padding: 0.4em;

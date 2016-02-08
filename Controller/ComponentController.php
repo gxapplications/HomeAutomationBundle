@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use GXApplications\HomeAutomationBundle\Entity\MyfoxCommand;
 
-// FIXME !0: rework all this
 class ComponentController extends Controller
 {
 	
@@ -26,22 +25,24 @@ class ComponentController extends Controller
      * @Method({"POST"})
      * @ParamConverter ("page", class="GXHomeAutomationBundle:Page", options={"id" = "page_id"})
      */
-    public function addComponentAction(Page $page)
+    public function addComponentAction(Page $page, Request $request)
     {
-    	$containerId = $this->getRequest()->request->getInt('container_id');
-    	$type = $this->getRequest()->request->getInt('type', false);
-    	if ($containerId > 0 && $type !== false) {
+		if ($page == null) {
+			throw new \Exception("Adding component failed. No page found.");
+		}
+
+    	$positionXY = $request->request->get('position', false);// indexed  array {x, y}
+    	$type = $request->request->getInt('type', false);
+    	if ($positionXY !== false && $type !== false) {
     		$em = $this->getDoctrine()->getManager();
-    		$container = $em->getRepository('GXHomeAutomationBundle:Container')->find($containerId);
-    		if (!$container) throw Excpetion("Adding component on a unknown container.");
-    		
-    		$id = Components::add($container, $type, $em);
+    		$id = Components::add($type, $page, $positionXY['x'], $positionXY['y'], $em);
     		return new Response($id);
     	} else throw new \Exception("Adding component failed.");
     }
     
     
     /**
+	 * FIXME !10: rework all this
      * @Route("/removeComponent/page/{page_id}", name="_component_remove")
      * @Method({"POST"})
      * @ParamConverter ("page", class="GXHomeAutomationBundle:Page", options={"id" = "page_id"})
@@ -60,6 +61,7 @@ class ComponentController extends Controller
     
     
     /**
+	 * FIXME !10: rework all this
      * @Route("/sortComponent/page/{page_id}", name="_component_sort")
      * @Method({"POST"})
      * @ParamConverter ("page", class="GXHomeAutomationBundle:Page", options={"id" = "page_id"})
@@ -94,6 +96,7 @@ class ComponentController extends Controller
     }
     
     /**
+	 * FIXME !10: rework all this
      * @Route("/editDialogComponent/component/{component_id}", name="_component_edit_dialog", requirements={"component_id" = "\d*"})
      * @Method({"GET"})
      * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
@@ -116,6 +119,7 @@ class ComponentController extends Controller
     }
     
     /**
+	 * FIXME !10: rework all this
      * @Route("/commitComponent/component/{component_id}", name="_component_commit",  requirements={"component_id" = "\d*"})
      * @Method({"POST"})
      * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
@@ -168,7 +172,7 @@ class ComponentController extends Controller
     }
     
     /**
-     * @Route("/showComponent/component/{component_id}", name="_component_show",  requirements={"component_id" = "\d*"})
+     * @Route("/showComponent/{component_id}", name="_component_show",  requirements={"component_id" = "\d*"})
      * @Method({"GET"})
      * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
      */
@@ -182,5 +186,25 @@ class ComponentController extends Controller
     	);
     	return new Response($content);
     }
+
+	/**
+	 * @Route("/showComponent/", name="_component_show_get")
+	 * @Method({"GET","POST"})
+	 */
+	public function showGetAction(Request $request)
+	{
+		$componentId = $request->query->get('component_id', $request->query->get('id', null));
+		if ($componentId == null) {
+			return Response::create('Component not found', 404);
+		}
+
+		$em = $this->getDoctrine()->getManager();
+		$component = $em->getRepository('GXHomeAutomationBundle:Component')->find($componentId);
+		if (!$component) {
+			return Response::create('Component not found', 404);
+		}
+
+		return $this->showAction($component);
+	}
     			
 }			

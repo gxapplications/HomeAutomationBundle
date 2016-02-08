@@ -44,4 +44,7 @@ class Components
         return $reflect->getConstants();
     }
 
+	public static function add($type, $page, $x, $y, $em) {
+		// TODO !0
+	}
 }

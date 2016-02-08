@@ -34,7 +34,7 @@
 	{% endjavascripts %}
 	<script>
 		var gridStack = null;
-		var loaderUrl = 'gridlist_card'; // TODO !
+		var loaderUrl = '{{ path("_component_show_get") }}';
 		var app = angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
 
 		app
@@ -48,6 +48,16 @@
 				},
 				goToPage: function(pageId) {
 					$window.location.href = '{{ path("_home_page_main", {'home_id': home.id, 'page_id': 999999 }) }}'.replace(/999999/, pageId);
+				},
+				notifications: {
+					postSuccess: function(message) {
+						console.log(message);
+						// TODO !110.
+					},
+					postError: function(message) {
+						console.log(message);
+						// TODO !110.
+					}
 				}
 			};
 
@@ -71,33 +81,62 @@
 				}
 			};
 
-			// sidenav new widgets
-			$rootScope.addWidgetsPanel = {
+			// sidenav new components
+			$rootScope.addComponentsPanel = {
 				toggle: function() {
-					$mdSidenav('addWidgetsSidenav').toggle();
+					$mdSidenav('addComponentsSidenav').toggle();
 				},
 				isOpen: function() {
-					return $mdSidenav('addWidgetsSidenav').isOpen();
+					return $mdSidenav('addComponentsSidenav').isOpen();
 				}
 			};
-			this.toggleAddWidgets = $scope.addWidgetsPanel.toggle;
+			this.toggleAddComponents = $scope.addComponentsPanel.toggle;
 		});
 
-		// Angular Add widgets sidenav controller
-		app.controller('AddWidgetsCtrl', function ($scope, $mdSidenav) {
-			$scope.close = function () {
-				$mdSidenav('addWidgetsSidenav').close();
+		// Angular Add components sidenav controller
+		app.controller('AddComponentsCtrl', function ($scope, $mdSidenav) {
+			$scope.close = function() {
+				$mdSidenav('addComponentsSidenav').close();
+			};
+			this.addComponent = function(type) {
+				var position = gridStack.findFreeSpaceXY(1,1); // TODO !2: remplacer w/h [1,1] par les dimensions préférées du nouveau widget.
+				$.post(
+					'{{ path("_component_add", {'page_id': page.id}) }}',
+					{
+						'type': type,
+						'position': position
+					}
+				).done(function() {
+					// TODO !1: puis retravailler sf a ce niveau. Il doit retourner le componentID pour l'instant ? puis reloader toute la page ?
+					// moyenne idée : on perd le mode edition en cours...
+				}).fail(function() {
+					console.log('No room to add!');
+					// TODO !110.
+				});
 			};
 		});
 
 		// init
 		$(function() {
 			gridStack = $('#grid').gridStack({
-				matrix: {{page.positions|default("[ {id: 1, w: 1, h: 1, x: 0, y: 0}, {id: 2, w: 1, h: 2, x: 0, y: 1}, {id: 3, w: 2, h: 2, x: 1, y: 0} ]")}},
+				matrix: {{page.positions|default("[]")|raw}},
 				onChange: function(changedItems, matrix) {
-					// TODO !0: save data server side.
-					console.log(changedItems);
-					console.log(matrix);
+					$.post(
+						'{{ path("_home_page_commit", {'page_id': page.id}) }}',
+						{
+							'page': {'positions': matrix}
+						}
+					).done(function() {
+						var scope = angular.element($("#MainCtrl")).scope();
+						scope.$apply(function(){
+							scope.toolbar.notifications.postSuccess('Components positions saved.');
+						});
+					}).fail(function() {
+						var scope = angular.element($("#MainCtrl")).scope();
+						scope.$apply(function(){
+							scope.toolbar.notifications.postError('Components positions cannot be saved.');
+						});
+					});
 				},
 				lanes: {{page.getLayout()}},
 				elementPrototype: 'li.position-card',
@@ -116,7 +155,7 @@
 {% endblock %}
 
 {% block body %}
-<div layout="column" layout-fill style="overflow:hidden;" ng-controller="MainCtrl as MainCtrl">
+<div layout="column" layout-fill style="overflow:hidden;" ng-controller="MainCtrl as MainCtrl" id="MainCtrl">
 
 	<md-toolbar md-scroll-shrink>
 		<div class="md-toolbar-tools" ng-cloak>
@@ -188,7 +227,7 @@
 				</md-slider>
 				<span ng-show="editMode.show">&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
-				<md-button aria-label="Add card" ng-click="MainCtrl.toggleAddWidgets()">
+				<md-button aria-label="Add card" ng-click="MainCtrl.toggleAddComponents()">
 					<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_add_to_queue.png') }}" width="24" height="24" /></md-icon>
 					Add card
 				</md-button>
@@ -203,32 +242,21 @@
 
 </div>
 
-<md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="addWidgetsSidenav" ng-cloak>
+<md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="addComponentsSidenav" ng-cloak>
 	<md-toolbar class="md-theme-light">
-		<h1 class="md-toolbar-tools">Add a widget</h1>
+		<h1 class="md-toolbar-tools">Add a component</h1>
 	</md-toolbar>
-	<md-list ng-controller="AddWidgetsCtrl as AddWidgetsCtrl">
-		<md-list-item ng-click="navigateTo('data usage', $event)">
-			<md-icon md-svg-icon="cached"></md-icon>
-			<p>Data Usage</p>
-		</md-list-item>
-		<md-divider></md-divider>
-		<md-list-item ng-click="navigateTo('data usage', $event)">
-			<md-icon md-svg-icon="cached"></md-icon>
-			<p>Data Usage</p>
-		</md-list-item>
-		<md-list-item ng-click="navigateTo('data usage', $event)">
-			<md-icon md-svg-icon="cached"></md-icon>
-			<p>Data Usage</p>
-		</md-list-item>
-		<md-list-item ng-click="navigateTo('data usage', $event)">
-			<md-icon md-svg-icon="cached"></md-icon>
-			<p>Data Usage</p>
-		</md-list-item>
+	<md-list ng-controller="AddComponentsCtrl as AddComponentsCtrl">
+		{% for component_type in component_types %}
+			<md-list-item ng-click="AddComponentsCtrl.addComponent({{loop.index0}})">
+				<md-icon md-svg-icon="cached"></md-icon>
+				<p>{{component_type}}</p>
+			</md-list-item>
+		{% endfor %}
 		<md-divider></md-divider>
 		<md-list-item>
 			<md-button ng-click="close()">
-				Close Sidenav Right
+				Cancel
 			</md-button>
 		</md-list-item>
 	</md-list>
