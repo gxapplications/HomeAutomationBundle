@@ -128,7 +128,7 @@
 		{% endif %}
 		
 		<div ng-show="querying" layout="column" layout-align="center center" style="height:100px; margin-bottom:-90px;">
-			<md-progress-circular md-mode="indeterminate"></md-progress-circular>
+			<md-progress-circular md-mode="indeterminate" md-diameter="128"></md-progress-circular>
 		</div>
 		<div ng-show="!querying" layout="column" layout-align="center center" style="height:100px; margin-bottom:-90px;">
 			<span class="error squize-opacity-animate-show" ng-show="login.admin_pwd_error">Invalid password!</span>

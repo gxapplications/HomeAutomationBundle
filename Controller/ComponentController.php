@@ -31,69 +31,41 @@ class ComponentController extends Controller
 			throw new \Exception("Adding component failed. No page found.");
 		}
 
-    	$positionXY = $request->request->get('position', false);// indexed  array {x, y}
+    	$positionXY = $request->request->get('position', false); // indexed  array {x, y}
+		$dimensionsWH = $request->request->get('dimensions', ['w' => 1, 'h' => 1]); // indexed  array {w, h}
     	$type = $request->request->getInt('type', false);
     	if ($positionXY !== false && $type !== false) {
     		$em = $this->getDoctrine()->getManager();
-    		$id = Components::add($type, $page, $positionXY['x'], $positionXY['y'], $em);
+    		$id = Components::add($type, $page, $positionXY['x'], $positionXY['y'], $dimensionsWH['w'], $dimensionsWH['h'], $em);
     		return new Response($id);
     	} else throw new \Exception("Adding component failed.");
     }
     
     
     /**
-	 * FIXME !10: rework all this
      * @Route("/removeComponent/page/{page_id}", name="_component_remove")
      * @Method({"POST"})
      * @ParamConverter ("page", class="GXHomeAutomationBundle:Page", options={"id" = "page_id"})
      */
-    public function removeComponentAction(Page $page)
+    public function removeComponentAction(Page $page, Request $request)
     {
-    	$componentId = $this->getRequest()->request->getInt('component_id');
-    	if ($componentId) {
+		if ($page == null) {
+			throw new \Exception("Removing component failed. No page found.");
+		}
+
+		$matrix = $request->request->get('matrix', []);
+    	$componentId = $request->request->getInt('component_id', $request->request->getInt('id', false));
+    	if ($matrix !== false && $componentId) {
     		$em = $this->getDoctrine()->getManager();
     		$component = $em->getRepository('GXHomeAutomationBundle:Component')->find($componentId);
     		$em->remove($component);
-    		$em->flush();
+			$page->setPositions(json_encode($matrix));
+			$em->persist($page);
+			$em->flush();
     		return new Response(1);
     	} else throw new \Exception("Removing component failed.");
     }
-    
-    
-    /**
-	 * FIXME !10: rework all this
-     * @Route("/sortComponent/page/{page_id}", name="_component_sort")
-     * @Method({"POST"})
-     * @ParamConverter ("page", class="GXHomeAutomationBundle:Page", options={"id" = "page_id"})
-     */
-    public function sortComponentAction(Page $page)
-    {
-    	$em = $this->getDoctrine()->getManager();
-    	
-    	$containerId = $this->getRequest()->request->getInt('container_id');
-    	if (!($containerId > 0)) throw new \Exception("Sorting components on a unknown container.");
-    			
-    	$container = $em->getRepository('GXHomeAutomationBundle:Container')->find($containerId);
-    	if (!$container) throw new \Exception("Sorting components on a unknown container.");
-    	
-    	$components = $this->getRequest()->request->get('ids');
-    	if (is_array($components)) {
-    		try {
-	    		array_walk($components, function(&$value, $key) use($em) {
-	    			$id = explode('_',$value);
-	    			if (sizeof($id) >=2 && $id[1] > 0) {
-	    				$id = $id[1];
-	    				$value = $em->getRepository('GXHomeAutomationBundle:Component')->find($id);
-	    			} else $value = false;
-	    		});
-	    		$result = Components::sort($container, $components, $em);
-	    		return new Response($result?1:0);
-    		} catch (Exception $e) {
-    			throw new \Exception("Sorting components failed.");
-    		}
-    	}
-    	return new Response(0);
-    }
+
     
     /**
 	 * FIXME !10: rework all this
@@ -181,10 +153,14 @@ class ComponentController extends Controller
     	$template = Components::$constTemplates[$component->getType()];
     	 
     	$content = $this->renderView(
-    			$template,
-    			array('component' => $component, 'container' => $component->getContainer())
+				$template,
+    			array('component' => $component, 'refreshInterval' => 0) // TODO !0: interv de refresh par component type!
     	);
-    	return new Response($content);
+
+		// TODO !2: brancher le 'config' sur la card de base.
+		// TODO !0: surcharger le tpl par type de component (ComponentController, L.185)
+
+		return new Response($content);
     }
 
 	/**
@@ -193,7 +169,7 @@ class ComponentController extends Controller
 	 */
 	public function showGetAction(Request $request)
 	{
-		$componentId = $request->query->get('component_id', $request->query->get('id', null));
+		$componentId = $request->get('component_id', $request->get('id', null));
 		if ($componentId == null) {
 			return Response::create('Component not found', 404);
 		}

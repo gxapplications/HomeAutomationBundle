@@ -4,6 +4,7 @@ namespace GXApplications\HomeAutomationBundle;
 
 use GXApplications\HomeAutomationBundle\Entity\Component;
 use GXApplications\HomeAutomationBundle\Entity\HeatingDashboardComponent;
+use GXApplications\HomeAutomationBundle\Entity\Page;
 
 class Components
 {
@@ -18,7 +19,18 @@ class Components
 			6 => 'Heating - On/Off contactor dashboard', // Pour 1 chauffage piloté par un contacteur sec On/Off, contrôle complet asservi par la t°
 			//7 => 'Heating - 4 orders piloted dashboard', // Pour 1 chauffage piloté par un fil pilote 4 ordres, contrôle complet asservi par la t°
 	);
-	
+
+	public static $constPreferredSizes = array(
+		0 => ['w' => 1, 'h' => 1],
+		1 => ['w' => 1, 'h' => 1],
+		2 => ['w' => 1, 'h' => 1],
+		3 => ['w' => 1, 'h' => 1],
+		4 => ['w' => 1, 'h' => 1],
+		5 => ['w' => 2, 'h' => 1],
+		6 => ['w' => 2, 'h' => 2],
+		//7 => 'Heating - 4 orders piloted dashboard', // Pour 1 chauffage piloté par un fil pilote 4 ordres, contrôle complet asservi par la t°
+	);
+
 	public static $constTemplates = array(
 			0 => 'GXHomeAutomationBundle:Component:component_macro.html.twig',
 			1 => 'GXHomeAutomationBundle:Component:component_scenario_play.html.twig',
@@ -44,7 +56,28 @@ class Components
         return $reflect->getConstants();
     }
 
-	public static function add($type, $page, $x, $y, $em) {
-		// TODO !0
+	public static function add($type, Page $page, $x, $y, $w, $h, $em) {
+		$component = new Component();
+		$component->setType($type);
+
+		if ($type == 6) {
+			$hdbc = new HeatingDashboardComponent();
+			$hdbc->setComponent($component);
+			$component->setHeatingDashboard($hdbc);
+		}
+
+		$em->persist($component);
+		$em->flush();
+
+		$positions = json_decode($page->getPositions(), true);
+		$positions[] = [
+			'id' => $component->getId(),
+			'w' => $w, 'h' => $h, 'x' => $x, 'y' => $y
+		];
+		$page->setPositions(json_encode($positions));
+		$em->persist($page);
+		$em->flush();
+
+		return $component->getId();
 	}
 }

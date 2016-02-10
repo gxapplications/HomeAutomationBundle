@@ -33,7 +33,7 @@
 	    <script src="{{ asset_url }}"></script>
 	{% endjavascripts %}
 	<script>
-		var gridStack = null;
+		var gridStack = null, init, matrix;
 		var loaderUrl = '{{ path("_component_show_get") }}';
 		var app = angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
 
@@ -71,6 +71,33 @@
 				if (gridStack !== null) // cancel effect at init
 					gridStack.setLanes($scope.editMode.columnCount);
 			});
+			$rootScope.removeComponent = function(componentId) {
+				// remove component from matrix
+				var newMatrix = [];
+				for (var i = 0; i < matrix.length; i++) {
+					if (matrix[i]['id'] != componentId) {
+						newMatrix.push(matrix[i]);
+					}
+				}
+				matrix = newMatrix;
+				// update DB (remove component and update page)
+				$.post(
+					'{{ path("_component_remove", {'page_id': page.id}) }}',
+					{
+						'matrix': matrix,
+						'id': componentId
+					}
+				).done(function(data) {
+					$(init()); // reinit gridStack
+
+					console.log('Removed with success!');
+					// TODO !110.
+				}).fail(function() {
+
+					console.log('Error removing component!');
+					// TODO !110.
+				});
+			};
 
 			// refresh features
 			$rootScope.refresh = []; // functions to execute to force refresh of a card.
@@ -98,35 +125,42 @@
 			$scope.close = function() {
 				$mdSidenav('addComponentsSidenav').close();
 			};
-			this.addComponent = function(type) {
-				var position = gridStack.findFreeSpaceXY(1,1); // TODO !2: remplacer w/h [1,1] par les dimensions préférées du nouveau widget.
+			this.addComponent = function(type, w, h) {
+				var position = gridStack.findFreeSpaceXY(w, h);
 				$.post(
 					'{{ path("_component_add", {'page_id': page.id}) }}',
 					{
 						'type': type,
-						'position': position
+						'position': position,
+						'dimensions': {'w': w, 'h': h}
 					}
-				).done(function() {
-					// TODO !1: puis retravailler sf a ce niveau. Il doit retourner le componentID pour l'instant ? puis reloader toute la page ?
-					// moyenne idée : on perd le mode edition en cours...
+				).done(function(data) {
+					matrix.push({ 'id': data, 'w': w, 'h': h, 'x': position['x'], 'y': position['y'] });
+					$(init()); // reinit gridStack
+
+					console.log('Added with success!');
+					// TODO !110.
 				}).fail(function() {
-					console.log('No room to add!');
+					console.log('No room to add or error adding component!');
 					// TODO !110.
 				});
+				$scope.close();
 			};
 		});
 
 		// init
-		$(function() {
+		matrix = {{page.positions|default("[]")|raw}};
+		init = function() {
 			gridStack = $('#grid').gridStack({
-				matrix: {{page.positions|default("[]")|raw}},
-				onChange: function(changedItems, matrix) {
+				matrix: matrix,
+				onChange: function(changedItems, mx) {
 					$.post(
 						'{{ path("_home_page_commit", {'page_id': page.id}) }}',
 						{
-							'page': {'positions': matrix}
+							'page': {'positions': mx}
 						}
 					).done(function() {
+						matrix = mx;
 						var scope = angular.element($("#MainCtrl")).scope();
 						scope.$apply(function(){
 							scope.toolbar.notifications.postSuccess('Components positions saved.');
@@ -146,11 +180,12 @@
 					helper: 'original'
 				}
 			});
-			$('#screen-shield').html('').css('background', 'transparent');
-			window.setTimeout(function() {
-				$('#screen-shield').remove();
-			}, 2000);
-		});
+		};
+		$(init());
+		$('#screen-shield').html('').css('background', 'transparent');
+		window.setTimeout(function() {
+			$('#screen-shield').remove();
+		}, 2000);
 	</script>
 {% endblock %}
 
@@ -248,7 +283,7 @@
 	</md-toolbar>
 	<md-list ng-controller="AddComponentsCtrl as AddComponentsCtrl">
 		{% for component_type in component_types %}
-			<md-list-item ng-click="AddComponentsCtrl.addComponent({{loop.index0}})">
+			<md-list-item ng-click="AddComponentsCtrl.addComponent({{loop.index0}}, {{ component_preferred_sizes[loop.index0]['w'] }}, {{ component_preferred_sizes[loop.index0]['h'] }})">
 				<md-icon md-svg-icon="cached"></md-icon>
 				<p>{{component_type}}</p>
 			</md-list-item>

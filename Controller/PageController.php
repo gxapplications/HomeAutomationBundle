@@ -71,7 +71,12 @@ class PageController extends Controller
     	$em->persist($home);
     	$em->flush();
 
-    	return array('home' => $home, 'page' => $page, 'component_types' => Components::$constNames);
+    	return array(
+			'home' => $home,
+			'page' => $page,
+			'component_types' => Components::$constNames,
+			'component_preferred_sizes' => Components::$constPreferredSizes,
+		);
     }
     
     /**

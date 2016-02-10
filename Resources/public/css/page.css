@@ -17,6 +17,7 @@ img.fab-button {
 /* GridList */
 .grid {
 	position: relative;
+	margin-left: 0.8em;
 	height: 100%;
 	list-style: none;
 	/* Will be modified by the grid jquery lib, depending on the items */
@@ -72,7 +73,7 @@ img.fab-button {
 }
 */
 .grid li.position-highlight .inner {
-	background: #222222;
+	background: #121212;
 }
 
 div.gridlist-card {

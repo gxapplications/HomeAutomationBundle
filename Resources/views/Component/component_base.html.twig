@@ -1,0 +1,154 @@
+<div flex layout-fill layout-align="center stretch" class="gridlist-card">
+    <div ng-controller="CardCtrl-{{ component.id }} as ctrl" layout="column" layout-fill layout-align="space-around stretch">
+        <div class="handle" layout="row" layout-align="start start" layout-padding ng-show="editMode.show">
+            <div>&#9776;</div>
+        </div>
+        <md-fab-toolbar class="handle md-fab-top-right" style="width:100%; top: 0; right: 0" md-direction="left" ng-show="editMode.show">
+            <md-fab-trigger class="align-with-text">
+                <md-button aria-label="Card menu" class="md-fab md-mini md-hue-1 md-ink-ripple">
+                    <md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_edit.png') }}" class="s14" /></md-icon>
+                </md-button>
+            </md-fab-trigger>
+            <md-toolbar>
+                <md-fab-actions class="md-toolbar-tools">
+                    <md-button aria-label="Configure" class="md-icon-button">
+                        <md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_settings.png') }}" class="s14" /></md-icon>
+                    </md-button>
+                    <md-menu>
+                        <md-button aria-label="Change card size" class="md-button md-ink-ripple" ng-click="ctrl.openMenu($mdOpenMenu, $event)">
+                            Size
+                        </md-button>
+                        <md-menu-content width="3">
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(1, 1)">
+                                    1? , 1?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(2, 1)">
+                                    2? , 1?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(3, 1)">
+                                    3? , 1?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-divider></md-menu-divider>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(1, 2)">
+                                    1? , 2?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(2, 2)">
+                                    2? , 2?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(3, 2)">
+                                    3? , 2?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-divider></md-menu-divider>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(1, 3)">
+                                    1? , 3?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(2, 3)">
+                                    2? , 3?
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button ng-click="ctrl.resize(3, 3)">
+                                    3? , 3?
+                                </md-button>
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
+                    <span>&nbsp;&nbsp;&nbsp;</span>
+                    <md-button aria-label="Remove card" class="md-icon-button md-warn" ng-click="ctrl.remove({{ component.id }})">
+                        <md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_delete.png') }}" class="s14" /></md-icon>
+                    </md-button>
+                </md-fab-actions>
+            </md-toolbar>
+        </md-fab-toolbar>
+
+        <div flex layout="column" layout-margin layout-align="center stretch">
+            {% block html_content %}
+                -{{ component.id }}-
+            {% endblock %}
+        </div>
+        <div>
+            <md-progress-linear md-mode="determinate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-show="refresher.percent<=100" value="{{ '{{ ' }}refresher.percent{{ '}}' }}"></md-progress-linear>
+            <md-progress-linear md-mode="indeterminate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-hide="refresher.percent<=100"></md-progress-linear>
+        </div>
+
+    </div>
+
+    <script>
+        app.controllerProvider.register("CardCtrl-{{ component.id }}", function($rootScope, $scope, $interval) {
+            $scope.editMode = $rootScope.editMode;
+            var originatorEv;
+            this.openMenu = function($mdOpenMenu, ev) {
+                originatorEv = ev;
+                $mdOpenMenu(ev);
+            };
+
+            // resize menu
+            this.resize = function(w, h) {
+                var element = $('#grid li[data-id="{{ component.id }}"]');
+                gridStack.resizeItem(element, w, h);
+            };
+
+            // remove menu item
+            this.remove = $rootScope.removeComponent;
+
+            // refresh timer
+            $scope.refresher = {
+                percent: 0,
+                interval: (100*{{ refreshInterval }}),
+                timer: null,
+                hue: '',
+                refresh: function() {
+                    $scope.refresher.percent = 102;
+                    $('li.position-card[data-id="{{ component.id }}"] > .inner', gridStack).first().load(
+                            loaderUrl,
+                            { id: {{ component.id }} },
+                            function (response, status) {
+                                if ( status == "error" ) {
+                                    $scope.refresher.percent = 0; // try again later
+                                    $scope.refresher.hue = 'md-warn';
+                                } else {
+                                    $interval.cancel($scope.refresher.timer);
+                                    gridStack.compileAngularElement(this);
+                                }
+                            }
+                    );
+                }
+            };
+            {% if refreshInterval > 0 %}
+                $scope.refresher.timer = $interval(function() {
+                    $scope.refresher.percent += 1;
+                    if ($scope.refresher.percent == 101) {
+                        $scope.refresher.refresh();
+                    }
+                }, $scope.refresher.interval/10, 0, true);
+            {% endif %}
+            $rootScope.refresh[{{ component.id }}] = $scope.refresher.refresh;
+            $scope.$on("$destroy",
+                    function() {
+                        if ($scope.refresher.timer != null) {
+                            $interval.cancel($scope.refresher.timer);
+                        }
+                        $rootScope.refresh[{{ component.id }}] = null;
+                    }
+            );
+
+            {% block controller_content %}
+            {% endblock %}
+        });
+    </script>
+</div>
