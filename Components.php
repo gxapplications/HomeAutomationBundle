@@ -20,6 +20,7 @@ class Components
 			//7 => 'Heating - 4 orders piloted dashboard', // Pour 1 chauffage piloté par un fil pilote 4 ordres, contrôle complet asservi par la t°
 	);
 
+	// Defaults Width and height for a new component just added to the grid.
 	public static $constPreferredSizes = array(
 		0 => ['w' => 1, 'h' => 1],
 		1 => ['w' => 1, 'h' => 1],
@@ -28,7 +29,17 @@ class Components
 		4 => ['w' => 1, 'h' => 1],
 		5 => ['w' => 2, 'h' => 1],
 		6 => ['w' => 2, 'h' => 2],
-		//7 => 'Heating - 4 orders piloted dashboard', // Pour 1 chauffage piloté par un fil pilote 4 ordres, contrôle complet asservi par la t°
+	);
+
+	// Normal refresh intervals (in seconds)
+	public static $constRefreshIntervals = array(
+		0 => 0,
+		1 => 0,
+		2 => 300,
+		3 => 300,
+		4 => 300,
+		5 => 120,
+		6 => 300,
 	);
 
 	public static $constTemplates = array(
@@ -39,16 +50,6 @@ class Components
 			4 => 'GXHomeAutomationBundle:Component:component_heating_modes.html.twig',
 			5 => 'GXHomeAutomationBundle:Component:component_macro.html.twig',
 			6 => 'GXHomeAutomationBundle:Component:component_heating_on_off_dashboard.html.twig',
-	);
-	
-	public static $constEditTemplates = array(
-			0 => 'GXHomeAutomationBundle:Component:component_edit_macro.html.twig',
-			1 => 'GXHomeAutomationBundle:Component:component_edit_scenario_play.html.twig',
-			2 => 'GXHomeAutomationBundle:Component:component_edit_scenario_activation.html.twig',
-			3 => 'GXHomeAutomationBundle:Component:component_edit_macro.html.twig',
-			4 => 'GXHomeAutomationBundle:Component:component_edit_heating_modes.html.twig',
-			5 => 'GXHomeAutomationBundle:Component:component_edit_macro.html.twig',
-			6 => 'GXHomeAutomationBundle:Component:component_edit_heating_on_off_dashboard.html.twig',
 	);
 	
 	public static function enum() {

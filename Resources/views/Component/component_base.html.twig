@@ -1,4 +1,4 @@
-<div flex layout-fill layout-align="center stretch" class="gridlist-card">
+<div id="component-{{ component.id }}" flex layout-fill layout-align="center stretch" class="gridlist-card">
     <div ng-controller="CardCtrl-{{ component.id }} as ctrl" layout="column" layout-fill layout-align="space-around stretch">
         <div class="handle" layout="row" layout-align="start start" layout-padding ng-show="editMode.show">
             <div>&#9776;</div>
@@ -11,7 +11,7 @@
             </md-fab-trigger>
             <md-toolbar>
                 <md-fab-actions class="md-toolbar-tools">
-                    <md-button aria-label="Configure" class="md-icon-button">
+                    <md-button aria-label="Configure" class="md-icon-button" ng-click="ctrl.configure($event)">
                         <md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_settings.png') }}" class="s14" /></md-icon>
                     </md-button>
                     <md-menu>
@@ -88,35 +88,96 @@
 
     </div>
 
+    {# The content below is html-commented to ensure it will not be "angularized" during init of the component. The dialog will do it instead. #}
+    <div class="component_edit_dialog" style="display:none;"><!--
+        <md-dialog name="componentEditForm-{{ component.id }}" aria-label="List dialog">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Edit component's properties</h2>
+                </div>
+            </md-toolbar>
+            <md-dialog-content style="min-width:700px;max-width:800px;max-height:810px;">
+                {% block configure_html_content %}
+                    <md-content class="md-padding">
+                        -Configure {{ component.id }}-
+                    </md-content>
+                {% endblock %}
+            </md-dialog-content>
+            <md-dialog-actions layout="row">
+                {% block configure_html_actions %}
+                    <span flex></span>
+                    <md-button ng-click="cancelConfig()">Cancel</md-button>
+                    <md-button class="md-primary md-raised" ng-click="saveConfig()" md-autofocus>Save</md-button>
+                {% endblock %}
+            </md-dialog-actions>
+        </md-dialog>
+    ---></div>
+
     <script>
-        app.controllerProvider.register("CardCtrl-{{ component.id }}", function($rootScope, $scope, $interval) {
+        app.controllerProvider.register("CardCtrl-{{ component.id }}", function($rootScope, $scope, $interval, $mdDialog) {
+
+            /* Edit mode and edit menu */
+
             $scope.editMode = $rootScope.editMode;
             var originatorEv;
             this.openMenu = function($mdOpenMenu, ev) {
                 originatorEv = ev;
                 $mdOpenMenu(ev);
             };
+            // Configure popin
+            this.configure = function($event) {
+                var content = $("div#component-{{ component.id }} div.component_edit_dialog").html().substring(4); // removes <!--
+                content = content.substr(0, content.length-4); // removes --->
+                $mdDialog.show({
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: true,
+                    targetEvent: $event,
+                    closeTo: "#component-{{ component.id }}",
+                    scope: $scope,        // use parent scope in template
+                    preserveScope: true,  // do not forget this if use parent scope
+                    onRemoving: function() {
+                        $scope.refresher.refresh();
+                    },
+                    template: content,
+                    controller: function($scope, $mdDialog) {
+                        $scope.cancelConfig = function() {
+                            $mdDialog.hide();
+                        };
+                        $scope.saveConfig = function() {
+                            // TODO !1: envoi POST de la config!
+                            $mdDialog.hide();
+                        };
+                        {% block configure_controller_script %}
+                        {% endblock %}
+                    }
+                });
 
+            };
             // resize menu
             this.resize = function(w, h) {
                 var element = $('#grid li[data-id="{{ component.id }}"]');
                 gridStack.resizeItem(element, w, h);
             };
-
             // remove menu item
             this.remove = $rootScope.removeComponent;
 
-            // refresh timer
+
+            /* refresh timer */
+
             $scope.refresher = {
                 percent: 0,
-                interval: (100*{{ refreshInterval }}),
+                interval: (100*{{ refreshInterval }}), // seconds*100. 0 for no auto refresh
+                forceIntervals: {{ forceIntervals }}, // seconds. false if no force intervals
                 timer: null,
                 hue: '',
                 refresh: function() {
                     $scope.refresher.percent = 102;
                     $('li.position-card[data-id="{{ component.id }}"] > .inner', gridStack).first().load(
                             loaderUrl,
-                            { id: {{ component.id }} },
+                            {
+                                id: {{ component.id }},
+                                forceIntervals: $scope.refresher.forceIntervals
+                            },
                             function (response, status) {
                                 if ( status == "error" ) {
                                     $scope.refresher.percent = 0; // try again later
@@ -147,8 +208,17 @@
                     }
             );
 
-            {% block controller_content %}
+
+            /* Component model */
+
+            $scope.component = {{ component.to_json|raw }};
+            $scope.myfox = $rootScope.myfox;
+
+            {% block controller_script %}
             {% endblock %}
         });
+
+        {% block script %}
+        {% endblock %}
     </script>
 </div>

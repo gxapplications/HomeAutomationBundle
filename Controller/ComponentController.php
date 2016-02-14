@@ -68,30 +68,7 @@ class ComponentController extends Controller
 
     
     /**
-	 * FIXME !10: rework all this
-     * @Route("/editDialogComponent/component/{component_id}", name="_component_edit_dialog", requirements={"component_id" = "\d*"})
-     * @Method({"GET"})
-     * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
-     */
-    public function editDialogComponentAction(Component $component)
-    {
-    	/* @var $myfox MyfoxService */
-    	$myfox = $this->get('gx_home_automation.myfox');
-    	$type = $component->getType();
-    	$home = $component->getContainer()->getPage()->getHome();
-    	
-    	$template = Components::$constEditTemplates[$type];
-    	$params = array('component' => $component);
-    	
-    	if ($type == 1 || $type == 2 || $type == 6) // scenario_play // scenario_activation
-    		$params['scenario_list'] = json_decode($myfox->playSync($home->getHomeKey(), MyfoxCommand::CMD_GET_SCENARIO_ITEMS, array(), true, true), true)['payload']['items'];
-
-    	$content = $this->renderView($template, $params);
-    	return new Response($content);
-    }
-    
-    /**
-	 * FIXME !10: rework all this
+	 * TODO !2: rework all this
      * @Route("/commitComponent/component/{component_id}", name="_component_commit",  requirements={"component_id" = "\d*"})
      * @Method({"POST"})
      * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
@@ -144,21 +121,31 @@ class ComponentController extends Controller
     }
     
     /**
-     * @Route("/showComponent/{component_id}", name="_component_show",  requirements={"component_id" = "\d*"})
+     * @Route("/showComponent/{component_id}/{forceIntervals}", name="_component_show",  requirements={"component_id" = "\d*"})
      * @Method({"GET"})
      * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
      */
-    public function showAction(Component $component)
+    public function showAction(Component $component, $forceIntervals = false)
     {
     	$template = Components::$constTemplates[$component->getType()];
-    	 
+
+		if ($forceIntervals !== false) {
+			$forceIntervals = explode('-', $forceIntervals);
+			$refreshInterval = array_shift($forceIntervals);
+		} else {
+			$refreshInterval = Components::$constRefreshIntervals[$component->getType()];
+		}
+
     	$content = $this->renderView(
-				$template,
-    			array('component' => $component, 'refreshInterval' => 0) // TODO !0: interv de refresh par component type!
+			$template,
+			array(
+				'component' => $component,
+				'refreshInterval' => $refreshInterval,
+				'forceIntervals' => ($forceIntervals !== false)? json_encode($forceIntervals) : 'false',
+			)
     	);
 
-		// TODO !2: brancher le 'config' sur la card de base.
-		// TODO !0: surcharger le tpl par type de component (ComponentController, L.185)
+		// TODO !4: surcharger le tpl par type de component (ComponentController, L.185)
 
 		return new Response($content);
     }
@@ -180,7 +167,9 @@ class ComponentController extends Controller
 			return Response::create('Component not found', 404);
 		}
 
-		return $this->showAction($component);
+		$forceIntervals = $request->get('force_intervals', $request->get('forceIntervals', false));
+
+		return $this->showAction($component, $forceIntervals);
 	}
     			
 }			
