@@ -5,24 +5,26 @@
 			   ng-disabled="{% if component.getForeignId1 is null %}true{% else %}(button.state == 1){% endif %}"
 			   layout="row" layout-align="start center" ng-class="{'md-accent': (button.state == 3)}"
 			   ng-click="button.scenarioPlay()">
-		<div flex="15"> <small>[icon]</small> </div>
-		<div flex layout="column">
-			<div flex>
-				{{ component.title }}
+		<div flex layout="row">
+			<md-icon layout-padding aria-label="custom" class="material-icons md-24">pan_tool</md-icon>
+			<div flex layout="column">
+				<h2 flex>
+					{{ component.title }}
+				</h2>
+				{% if component.description %}
+					<div flex class="description" style="text-transform: none;text-overflow: ellipsis">
+						{{ component.description }}
+					</div>
+				{% endif %}
 			</div>
-			{% if component.description %}
-				<div flex class="description" style="text-overflow: ellipsis">
-					{{ component.description }}
-				</div>
-			{% endif %}
-		</div>
-		<div class="timer" flex="10" style="min-height:4em;font-size:0.5em;padding-top:3em;"
-			 ng-class="{
-				'progress' : (button.state == 1),
-				'delay' : (button.state == 2),
-				'active': (button.state == 3),
-				'error' : (button.state == -1)
-			}">
+			<div class="timer" flex="10" style="min-height:4em;font-size:0.5em;padding-top:3em;"
+				 ng-class="{
+					'progress' : (button.state == 1),
+					'delay' : (button.state == 2),
+					'active': (button.state == 3),
+					'error' : (button.state == -1)
+				}">
+			</div>
 		</div>
 	</md-button>
 {% endblock %}
@@ -30,7 +32,7 @@
 
 {% block controller_script %}
 	$scope.button = {
-		state: 1, {# TODO !3: controlleur angular pour ce component... #}
+		state: 0, {# TODO !1: controlleur angular pour ce component... (state du bouton, action au clic, tempos, contre action, timer, refresh, ...) #}
 		scenarioPlay: function() {
 			console.log('PLAY '+{{ component.id }}+' TODO');
 		}
@@ -81,7 +83,40 @@
 		<md-divider></md-divider>
 		<section>
 			<md-subheader class="md-warn">Options</md-subheader>
-			{# TODO !0: fin du form a reprendre depuis component_edit_scenario_play.html.twig #}
+			<md-list layout="column" layout-padding>
+				<md-list-item>
+					<md-radio-group ng-model="component.option_1">
+						<md-radio-button value="0" ng-click="component.delay_2=0;component.foreign_id_2=null">None.</md-radio-button>
+						<md-radio-button value="1" ng-click="component.foreign_id_2=null">Keep active state for x minutes after played.</md-radio-button>
+						<md-radio-button value="2">Play another scenario after x minutes.</md-radio-button>
+					</md-radio-group>
+				</md-list-item>
+				<md-list-item layout="column" style="padding-top: 1em;">
+					<md-input-container flex layout-fill layout-align="center start" ng-show="component.option_1==='1'">
+						<label>Active state duration (in minutes)</label>
+						<input required type="number" step="any" name="component_delay_2" ng-model="component.delay_2" min="1" max="1440" required>
+						<div ng-messages="componentForm.component_delay_2.$error">
+							<div ng-message="required">If you does not want active state on the button, then choose another option!</div>
+							<div ng-message="min">Minimum 1 minute. Cannot work in seconds.</div>
+							<div ng-message="max">1440 minutes max. Equivalent to 24hrs.</div>
+						</div>
+					</md-input-container>
+					<div flex ng-show="component.option_1==='2'" layout="row" layout-fill layout-align="center start">
+						<md-input-container flex>
+							<label>Wait to play second scenario (in minutes)</label>
+							<input required type="number" step="any" name="component_delay_2" ng-model="component.delay_2" min="1" max="1440" required>
+							<div ng-messages="componentForm.component_delay_2.$error">
+								<div ng-message="required">If you does not want to delay a second scenario, then choose another option!</div>
+								<div ng-message="min">Minimum 1 minute. Cannot work in seconds.</div>
+								<div ng-message="max">1440 minutes max. Equivalent to 24hrs.</div>
+							</div>
+						</md-input-container>
+						<md-select placeholder="Scenario linked" ng-model="component.foreign_id_2" md-on-open="myfox.loadScenarii()" flex>
+							<md-option ng-value="scenario.scenarioId" ng-repeat="scenario in myfox.onDemandScenarii">{{ '{{' }}scenario.label{{ '}}' }}</md-option>
+						</md-select>
+					</div>
+				</md-list-item>
+			</md-list>
 		</section>
 	</form>
 {% endblock %}

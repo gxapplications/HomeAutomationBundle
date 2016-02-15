@@ -68,16 +68,15 @@ class ComponentController extends Controller
 
     
     /**
-	 * TODO !2: rework all this
      * @Route("/commitComponent/component/{component_id}", name="_component_commit",  requirements={"component_id" = "\d*"})
      * @Method({"POST"})
      * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
      */
-    public function commitComponentAction(Component $component)
+    public function commitComponentAction(Component $component, Request $request)
     {
     	$em = $this->getDoctrine()->getManager();
     	
-    	$componentData = $this->getRequest()->request->get("component");
+    	$componentData = $request->request->get("component");
     	
     	$component->setTitle($componentData['title'])->setDescription($componentData['description']);
     	// TODO !108: sauvegarder l'icone
@@ -92,13 +91,13 @@ class ComponentController extends Controller
     			$component->setDescription4(array_key_exists('description_4', $componentData)?$componentData['description_4']:'');
     			// no break!
     		case 1: // scenario play
-    			$component->setForeignId1($componentData['scenario_id']);
-    			$component->setForeignId2(array_key_exists('scenario_id_2', $componentData)?$componentData['scenario_id_2']:'');
-    			$component->setForeignId3(array_key_exists('scenario_id_3', $componentData)?$componentData['scenario_id_3']:'');
-    			$component->setForeignId4(array_key_exists('scenario_id_4', $componentData)?$componentData['scenario_id_4']:'');
-    			$component->setDelay1(array_key_exists('delay', $componentData)?$componentData['delay']:0);
-    			$component->setDelay2(array_key_exists('delay2', $componentData)?$componentData['delay2']:0);
-    			$component->setOption1(array_key_exists('option', $componentData)?$componentData['option']:0);
+    			$component->setForeignId1($componentData['foreign_id_1']);
+    			$component->setForeignId2(array_key_exists('foreign_id_2', $componentData)?$componentData['foreign_id_2']:'');
+    			$component->setForeignId3(array_key_exists('foreign_id_3', $componentData)?$componentData['foreign_id_3']:'');
+    			$component->setForeignId4(array_key_exists('foreign_id_4', $componentData)?$componentData['foreign_id_4']:'');
+    			$component->setDelay1(array_key_exists('delay_1', $componentData)?$componentData['delay_1']:0);
+    			$component->setDelay2(array_key_exists('delay_2', $componentData)?$componentData['delay_2']:0);
+    			$component->setOption1(array_key_exists('option_1', $componentData)?$componentData['option_1']:0);
     			break;
     			
     		case 6: // heating dashboard On/Off

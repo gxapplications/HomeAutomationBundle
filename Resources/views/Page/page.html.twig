@@ -13,6 +13,7 @@
         'bundles/gxhomeautomation/css/jquery.planer-0.1.css'
         filter='?phpcssembed,cssrewrite' %} {# filter='?phpcssembed,cssrewrite' #}
 	    <link rel="stylesheet" href="{{ asset_url }}" />
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	{% endstylesheets %}
 {% endblock %}
 
@@ -60,6 +61,7 @@
 					}
 				}
 			};
+			$rootScope.notifications = $scope.toolbar.notifications;
 
 			// edit mode
 			$rootScope.editMode = {
@@ -89,13 +91,9 @@
 					}
 				).done(function(data) {
 					$(init()); // reinit gridStack
-
-					console.log('Removed with success!');
-					// TODO !110.
+					$scope.toolbar.notifications.postSuccess('Component removed with success!');
 				}).fail(function() {
-
-					console.log('Error removing component!');
-					// TODO !110.
+					$scope.toolbar.notifications.postError('Error removing component!');
 				});
 			};
 
@@ -149,7 +147,7 @@
 		});
 
 		// Angular Add components sidenav controller
-		app.controller('AddComponentsCtrl', function ($scope, $mdSidenav) {
+		app.controller('AddComponentsCtrl', function ($scope, $mdSidenav, $rootScope) {
 			$scope.close = function() {
 				$mdSidenav('addComponentsSidenav').close();
 			};
@@ -165,12 +163,9 @@
 				).done(function(data) {
 					matrix.push({ 'id': data, 'w': w, 'h': h, 'x': position['x'], 'y': position['y'] });
 					$(init()); // reinit gridStack
-
-					console.log('Added with success!');
-					// TODO !110.
+					$rootScope.notifications.postSuccess('Component added with success!');
 				}).fail(function() {
-					console.log('No room to add or error adding component!');
-					// TODO !110.
+					$rootScope.notifications.postError('No room to add or error adding component!');
 				});
 				$scope.close();
 			};
@@ -224,7 +219,7 @@
 		<div class="md-toolbar-tools" ng-cloak>
 
 			<md-button aria-label="Logout" tabindex="501">
-				<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_unread.png') }}" width="24" height="24" /></md-icon>
+				<md-icon aria-label="receipt" class="material-icons md-24">receipt</md-icon>
 				(0)
 			</md-button>
 			{# TODO !110: notif center et icones de notifs ! #}
@@ -232,7 +227,7 @@
 
 			<span flex></span>
 			<h2>
-				<md-icon class="icon-img-centered"><img src="{{ asset('bundles/gxangularmaterial/images/home.png') }}" width="24" height="24" /></md-icon>
+				<md-icon aria-label="home" class="material-icons md-24 icon-img-centered">home</md-icon>
 				<span>{{home.name}} ~ {{page.name}}</span>
 			</h2>
 			<span flex></span>
@@ -241,14 +236,14 @@
 			{% for other_page in home.getPages() %}
 				{% if other_page.id != page.id %}
 					<md-button aria-label="Homes" ng-click="toolbar.goToPage({{other_page.id}})" tabindex="502">
-						<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_next_item.png') }}" width="24" height="24" /></md-icon>
+						<md-icon aria-label="bookmark_border" class="material-icons md-24">bookmark_border</md-icon>
 						{{other_page.name}}
 					</md-button>
 				{% endif %}
 			{% endfor %}
 
 			<md-button aria-label="Logout" ng-click="toolbar.logout()" tabindex="503">
-				<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_lock_power_off.png') }}" width="24" height="24" /></md-icon>
+				<md-icon aria-label="exit_to_app" class="material-icons md-24">exit_to_app</md-icon>
 				Logout
 			</md-button>
 		</div>
@@ -274,7 +269,7 @@
 	<md-fab-toolbar class="md-fab-bottom-right" style="width:100%" md-direction="left" ng-cloak>
 		<md-fab-trigger class="align-with-text">
 			<md-button aria-label="menu" class="md-fab" ng-class="{{ '{' }}'md-hue-2': editMode.show == false, 'md-hue-1': editMode.show == true{{ '}' }}">
-				<md-icon><img class="fab-button" src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_edit.png') }}" width="24" height="24" /></md-icon>
+				<md-icon aria-label="build" class="material-icons md-24">build</md-icon>
 			</md-button>
 		</md-fab-trigger>
 		<md-toolbar>
@@ -291,12 +286,12 @@
 				<span ng-show="editMode.show">&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
 				<md-button aria-label="Add card" ng-click="MainCtrl.toggleAddComponents()">
-					<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_add_to_queue.png') }}" width="24" height="24" /></md-icon>
+					<md-icon aria-label="add_box" class="material-icons md-24">add_box</md-icon>
 					Add card
 				</md-button>
 
 				<md-button aria-label="Refresh" ng-click="MainCtrl.refreshAll()">
-					<md-icon><img src="{{ asset('bundles/gxangularmaterial/images/android_core_holodark/ic_action_refresh.png') }}" width="24" height="24" /></md-icon>
+					<md-icon aria-label="autorenew" class="material-icons md-24">autorenew</md-icon>
 					Refresh
 				</md-button>
 			</md-fab-actions>
@@ -312,7 +307,7 @@
 	<md-list ng-controller="AddComponentsCtrl as AddComponentsCtrl">
 		{% for component_type in component_types %}
 			<md-list-item ng-click="AddComponentsCtrl.addComponent({{loop.index0}}, {{ component_preferred_sizes[loop.index0]['w'] }}, {{ component_preferred_sizes[loop.index0]['h'] }})">
-				<md-icon md-svg-icon="cached"></md-icon>
+				<md-icon aria-label="border_outer" class="material-icons md-24">border_outer</md-icon>
 				<p>{{component_type}}</p>
 			</md-list-item>
 		{% endfor %}
