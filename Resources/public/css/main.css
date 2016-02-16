@@ -20,17 +20,11 @@ html > body {
 	.md-24 {
 		font-size: 24px;
 	}
-	.md-24 {
+	.md-14 {
 		font-size: 14px;
 	}
 
 /* Global Material Designed elements */
-	img.fab-button {
-		width: 30px;
-		height: 30px;
-		margin-top: 13px;
-	}
-
 	md-bottom-sheet {
 		background-color: #4B4B4B;
 		border-top-color: #464646;

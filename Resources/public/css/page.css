@@ -57,27 +57,13 @@ img.fab-button {
 	-webkit-user-select: none;
 	user-select: none;
 }
-/*
-.grid li.changed .inner {
-	background: #ffff66;
-	-webkit-transition: none;
-	transition: none;
-}
-.grid li.ui-draggable-dragging {
-	-webkit-transition: none;
-	transition: none;
-}
-.grid li.position-highlight {
-	-webkit-transition: none;
-	transition: none;
-}
-*/
+
 .grid li.position-highlight .inner {
 	background: #121212;
 }
 
 div.gridlist-card {
-	background: #424242;
+	background: #303030;
 }
 div.gridlist-card button.md-mini img.s14 {
 	width: 1.4rem;
@@ -88,6 +74,9 @@ div.gridlist-card div.handle, div.gridlist-card div.md-fab-toolbar-content {
 	cursor: pointer;
 }
 
+div.card-progress-linears md-progress-linear .md-container {
+	background-color: transparent;
+}
 
 
 /* FIXME !0: d'ici, voir si on en a encore besoin... */

@@ -1,7 +1,7 @@
 <div id="component-{{ component.id }}" flex layout-fill layout-align="center stretch" class="gridlist-card">
     <div ng-controller="CardCtrl-{{ component.id }} as ctrl" layout="column" layout-fill layout-align="space-around stretch">
         <div class="handle" layout="row" layout-align="start start" layout-padding ng-show="editMode.show">
-            <md-icon aria-label="grain" class="material-icons md-14">grain</md-icon>
+            <md-icon aria-label="grain" class="material-icons md-14">grain</md-icon> <span flex></span>
         </div>
         <md-fab-toolbar class="handle md-fab-top-right" style="width:100%; top: 0; right: 0" md-direction="left" ng-show="editMode.show">
             <md-fab-trigger class="align-with-text">
@@ -82,7 +82,7 @@
                 -{{ component.id }}-
             {% endblock %}
         </div>
-        <div>
+        <div class="card-progress-linears">
             <md-progress-linear md-mode="determinate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-show="refresher.percent<=100" value="{{ '{{ ' }}refresher.percent{{ '}}' }}"></md-progress-linear>
             <md-progress-linear md-mode="indeterminate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-hide="refresher.percent<=100"></md-progress-linear>
         </div>
@@ -219,9 +219,9 @@
 
 
             /* Component model */
-
             $scope.component = {{ component.to_json|raw }};
             $scope.myfox = $rootScope.myfox;
+            $scope.notifications = $rootScope.notifications;
 
             {% block controller_script %}
             {% endblock %}

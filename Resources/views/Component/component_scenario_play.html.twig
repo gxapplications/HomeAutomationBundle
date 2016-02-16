@@ -32,11 +32,106 @@
 
 {% block controller_script %}
 	$scope.button = {
-		state: 0, {# TODO !1: controlleur angular pour ce component... (state du bouton, action au clic, tempos, contre action, timer, refresh, ...) #}
+		state: 1,
 		scenarioPlay: function() {
-			console.log('PLAY '+{{ component.id }}+' TODO');
+			if (!$scope.component.foreign_id_1) {
+				$scope.button.state = -1;
+				return;
+			}
+
+			// waiting for server response, so clean state
+			$scope.button.state = 1;
+
+			var now = (Date.now()/1000);
+			var ts = now + ($scope.component.delay_1*60);
+
+
+
+
+
+			$http.post(($scope.component.delay_1 > 0)? '{{ path("_set_schedule_myfox") }}' : '{{ path("_set_sync_myfox") }}', {
+				home_key: $scope.myfox.home_key,
+				command: 'CMD_SET_SCENARIO_PLAY',
+				parameters: { '%scenario_id%': $scope.component.foreign_id_1 },
+				component_update: $scope.component.id,
+				when: ts,
+				last_action: now
+			}).
+			success(function(data, status, headers, config) {
+				// error in the success result...
+				if (data.status != "OK") {
+					$rootScope.notifications.postError('Scenario Play action error!');
+					$scope.button.state = -1;
+					return;
+				}
+
+				// compute state
+				$scope.button.state = (Date.now()/1000 < ts)? 2 : ($scope.component.delay_2 > 0)? 3 : 0; // delay or active or normal.
+				$scope.component.last_action = now;
+
+				// after scenario play, should schedule second scenario play.
+				{# TODO !1: controlleur angular pour ce component... (contre action, timer, refresh, ...) #}
+
+
+/*
+								if (component['delay_2'] > 0) {
+									var scenario_id_2 = component['foreign_id_2'];
+									if (scenario_id_2 != null && scenario_id_2 != '') {
+										$http.post('{{ path("_set_schedule_myfox") }}', {
+											home_key: {{home.getHomeKey}},
+											command: 'CMD_SET_SCENARIO_PLAY',
+											parameters: { '%scenario_id%': scenario_id_2 },
+											component_update: component['id'],
+											when: ts+(component['delay_2']*60),
+											last_action: now
+										}).
+										success(function(data, status, headers, config) {
+											if (component['delay_1'] == 0) {
+												$('md-content[component-id="'+component_id+'"] div.timer').showTimer({date: ts+(component['delay_2']*60), onEnd: function() {
+													$scope.refreshComponents();
+												}});
+											}
+										}).
+										error(function(data, status, headers, config) {
+											$rootScope.$broadcast('ActionError', data, status);
+											component['state'] = -1;
+											$('md-content[component-id="'+component_id+'"] button').callbackGuiError();
+										});
+									}
+								}
+								// delayed state
+								if (component['delay_1'] > 0) { // delay_1 exists, delayed scenario play action.
+									$('md-content[component-id="'+component_id+'"] div.timer').showTimer({date: ts, onEnd: function() {
+										$scope.refreshComponents();
+									}});
+								}
+*/
+
+
+			}).
+			error(function(data, status, headers, config) {
+				$rootScope.notifications.postError('Scenario Play action error!');
+				$scope.button.state = -1;
+				return;
+			});
+		},
+		initState: function() {
+			var now = Date.now()/1000;
+			var lastAction = $scope.component.last_action;
+			var delay1 = $scope.component.delay_1*60;
+			var delay2 = $scope.component.delay_2*60;
+			if (lastAction + delay1 > now) {
+				$scope.button.state = 2; // action delayed
+				{# TODO !2: programmer un refresh du component dans "lastAction+delay1" secondes, dans une autre couleur #}
+			} else if (lastAction + delay1 + delay2 > now) {
+				$scope.button.state = 3; // activated
+				{# TODO !2: programmer un refresh du component dans "lastAction+delay1+delay2" secondes, dans une autre couleur #}
+			} else {
+				$scope.button.state = 0; // deactivated
+			}
 		}
 	};
+	$scope.button.initState();
 {% endblock %}
 
 

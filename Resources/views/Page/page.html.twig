@@ -119,6 +119,7 @@
 
 			// Myfox common data
 			$rootScope.myfox = {
+				home_key: "{{ home.getHomeKey }}",
 				scenarii: null,
 				onDemandScenarii: null,
 				loadScenarii: function() {
@@ -257,8 +258,12 @@
 				</li>
 				<li class="position-card">
 					<md-card class="md-whiteframe-6dp inner">
-						<div flex layout="row" layout-align="center center">
-							<md-progress-circular md-diameter="128" md-mode="indeterminate"></md-progress-circular>
+						<div flex layout="column" layout-align="center center">
+							<md-progress-circular md-diameter="196" md-mode="indeterminate" style="position:relative; top:18px;"></md-progress-circular>
+							<md-button aria-label="Refresh" ng-click="alert('todo')" {# TODO !0: le refresh on click #}
+									   style="position:relative; bottom:100px; z-index:3; visibility: hidden;" class="md-icon-button md-warn">
+								<md-icon aria-label="autorenew" class="material-icons md-14">autorenew</md-icon>
+							</md-button>
 						</div>
 					</md-card>
 				</li>
