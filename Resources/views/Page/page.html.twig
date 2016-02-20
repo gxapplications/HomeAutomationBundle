@@ -47,6 +47,9 @@
 				logout: function() {
 					$window.location.href = '{{ path("_home_logout") }}';
 				},
+				goToScheduler: function() {
+					$window.location.href = '{{ path("jmose_command_scheduler_list") }}';
+				},
 				goToPage: function(pageId) {
 					$window.location.href = '{{ path("_home_page_main", {'home_id': home.id, 'page_id': 999999 }) }}'.replace(/999999/, pageId);
 				},
@@ -243,7 +246,12 @@
 				{% endif %}
 			{% endfor %}
 
-			<md-button aria-label="Logout" ng-click="toolbar.logout()" tabindex="503">
+			<md-button aria-label="Scheduler" tabindex="503" ng-click="toolbar.goToScheduler()">
+				<md-icon aria-label="receipt" class="material-icons md-24">receipt</md-icon>
+				Scheduler
+			</md-button>
+
+			<md-button aria-label="Logout" ng-click="toolbar.logout()" tabindex="504">
 				<md-icon aria-label="exit_to_app" class="material-icons md-24">exit_to_app</md-icon>
 				Logout
 			</md-button>
@@ -257,10 +265,10 @@
 					<div class="inner md-whiteframe-1dp"></div>
 				</li>
 				<li class="position-card">
-					<md-card class="md-whiteframe-6dp inner">
+					<md-card class="inner">
 						<div flex layout="column" layout-align="center center">
 							<md-progress-circular md-diameter="196" md-mode="indeterminate" style="position:relative; top:18px;"></md-progress-circular>
-							<md-button aria-label="Refresh" ng-click="alert('todo')" {# TODO !0: le refresh on click #}
+							<md-button aria-label="Refresh" ng-click="alert('todo')" {# TODO !110: le refresh on click #}
 									   style="position:relative; bottom:100px; z-index:3; visibility: hidden;" class="md-icon-button md-warn">
 								<md-icon aria-label="autorenew" class="material-icons md-14">autorenew</md-icon>
 							</md-button>

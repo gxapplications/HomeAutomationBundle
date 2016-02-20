@@ -56,6 +56,7 @@ img.fab-button {
 	-khtml-user-select: none;
 	-webkit-user-select: none;
 	user-select: none;
+	box-shadow: none;
 }
 
 .grid li.position-highlight .inner {
@@ -64,6 +65,7 @@ img.fab-button {
 
 div.gridlist-card {
 	background: #303030;
+	border-radius: 5px;
 }
 div.gridlist-card button.md-mini img.s14 {
 	width: 1.4rem;

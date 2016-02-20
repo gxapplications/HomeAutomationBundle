@@ -29,7 +29,7 @@ class AsynchronousPlayMyfoxCommand extends ContainerAwareCommand
 	{
 		/* @var $service MyfoxService */
 		$service = $this->getContainer()->get('gx_home_automation.myfox');
-		
+
 		$output->writeln( $service->playAsync($input->getOption('home'), $input->getOption('command_id')) );
 		
 		if ($input->hasOption('removeschedule')) {

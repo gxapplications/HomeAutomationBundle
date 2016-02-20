@@ -44,22 +44,22 @@ class MyfoxService
 		$this->clientId = $clientId;
 		$this->clientSecret = $clientSecret;
 		$this->httpEmulation = !($clientId && strlen($clientId) > 0);
-		if ($this->httpEmulation) $this->curlHandler = self::createCurlHandler();
+		if ($this->httpEmulation) $this->curlHandler = $this->createCurlHandler();
 	}
 	
-	private static function createCurlHandler($copyFrom = false) {
+	private function createCurlHandler($copyFrom = false) {
 		if ($copyFrom) {
 			$ch2 = curl_copy_handle($copyFrom);
 			curl_close($copyFrom);
 			return $ch2;
 		}
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_USERAGENT,'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.93 Safari/537.36');
+		curl_setopt($ch, CURLOPT_USERAGENT,'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.103 Safari/537.36');
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_COOKIESESSION, true);
-		curl_setopt($ch, CURLOPT_COOKIEJAR, realpath("myfox-cookie.txt")); //could be empty, but cause problems on some hosts
-		curl_setopt($ch, CURLOPT_COOKIEFILE, realpath("myfox-cookie.txt")); //could be empty, but cause problems on some hosts
+		curl_setopt($ch, CURLOPT_COOKIEJAR, $this->container->getParameter('kernel.cache_dir').DIRECTORY_SEPARATOR."myfox-cookie.txt"); //could be empty, but cause problems on some hosts
+		curl_setopt($ch, CURLOPT_COOKIEFILE, $this->container->getParameter('kernel.cache_dir').DIRECTORY_SEPARATOR."myfox-cookie.txt"); //could be empty, but cause problems on some hosts
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); // FIXME: trouver plus securisee ?
 		return $ch;
@@ -84,7 +84,7 @@ class MyfoxService
 	}
 	
 	private function execCurlWrapper($url, $post = false, $postData = false) {
-		return self::execCurl($this->curlHandler, $this->container->get('logger'), $url, $post, $postData);
+		return self::execCurl($this->curlHandler, $this->container->get('logger'), $url, (bool)$post, $postData);
 	}
 	
 	
@@ -182,7 +182,7 @@ class MyfoxService
 						try {
 							$answer = $this->execCurlWrapper('https://myfox.me/login', true, array('username'=>$token->getAccountLogin(), 'password'=>$token->getAccountPassword()));
 						} catch (\Exception $e) {
-							$this->container->get('logger')->error('Failed to login again. cURL error Nbr: '.$e->getMessage());
+							$this->container->get('logger')->error(' Failed to login again. cURL error Nbr: '.$e->getMessage());
 							throw new \Exception('Failed to login again in HttpEmulation mode.');
 						}
 						
@@ -204,6 +204,7 @@ class MyfoxService
 				
 			$this->em->flush();
 			if (!$validToken) throw new \Exception('Myfox Authentication missing!');
+			$this->container->get('logger')->info('Myfox authentication succeed.');
 			return $validToken;
 		}
 	}
@@ -265,6 +266,8 @@ class MyfoxService
 		if (!$home) throw new ParameterException('Home Key not found');
 		$command = $this->em->getRepository('GXHomeAutomationBundle:MyfoxCommand')->find($command_id);
 		if (!$command) throw new NotScheduledException();
+		$command->init();
+		$this->em->flush();
 		$token = $this->refreshTokenIfNeeded($home);
 		$this->_playAsync($home, $command, $token);
 	}
@@ -396,7 +399,7 @@ class MyfoxService
 				try {
 					$rawResult = $this->execCurlWrapper('https://myfox.me'.$command->getCommand(), $command->isPost());
 				} catch (\Exception $e) {
-					$this->container->get('logger')->error('Failed to send Http query to Myfox from _playSync. cURL error Nbr: '.$e->getMessage());
+					$this->container->get('logger')->error('Failed to send Http query to Myfox from _playSync. cURL error Nbr: '.$e->getTraceAsString());
 					throw new \Exception('Failed to send Http query to Myfox from _playSync.');
 				}
 
@@ -441,6 +444,8 @@ class MyfoxService
 		try {
 			/*$result =*/ $this->_playSync($home, $command, $token, true);
 		} catch (\Exception $e) {
+			$this->container->get('logger')->error($e->getMessage());
+			$this->container->get('logger')->error($e->getTraceAsString());
 			$command->setState(MyfoxCommand::STATE_FAIL);
 			foreach($command->getEquivalents() as $equivalent) {
 				$this->em->remove($equivalent);

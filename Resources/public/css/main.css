@@ -17,11 +17,22 @@ html > body {
 
 
 /* Material Design icons font */
+	.md-48 {
+		font-size: 48px;
+	}
 	.md-24 {
 		font-size: 24px;
 	}
 	.md-14 {
 		font-size: 14px;
+	}
+
+	.button-icon-48 {
+		font-size: 48px !important;
+		width: 48px;
+		height: 48px;
+		position: inherit;
+		margin: 2px;
 	}
 
 /* Global Material Designed elements */

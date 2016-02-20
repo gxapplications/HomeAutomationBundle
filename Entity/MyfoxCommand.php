@@ -127,7 +127,7 @@ class MyfoxCommand
 			self::CMD_SET_SCENARIO_PLAY => array(
 					'http' => array(
 							'url' => "/widget/%home_key%/scenario/play/%scenario_id%",
-							'is_post' => true,
+							'is_post' => false,
 							'equivalents' => array(),
 							'parser' => function($raw, $container) {
 								return self::parseSimplePost($raw);
@@ -307,19 +307,19 @@ class MyfoxCommand
      * @ORM\Column(name="macro_parameters", type="string", length=1024, nullable=true)
      */
     private $macro_parameters = null;
-    
-    /**
-     * 
-     * @param string $command Optional command string for auto init
-     * @param Array $parameters Optional command arguments (associative array)
-     * @param boolean $httpEmulation True if using HTTP emulation instead of API calls.
-     * @param boolean $createEquivalents True to create automatically all myfoxCommand equivalences that will share the same raw result. True only for HttpEmulated mode.
-     * 
-     */
+
+	/**
+	 * Constructor
+	 *
+	 * @param bool|string $command Optional command string for auto init
+	 * @param Array $parameters Optional command arguments (associative array)
+	 * @param boolean $httpEmulation True if using HTTP emulation instead of API calls.
+	 * @param boolean $createEquivalents True to create automatically all myfoxCommand equivalences that will share the same raw result. True only for HttpEmulated mode.
+	 * @throws \Exception
+	 */
     public function __construct($command = false, $parameters = array(), $httpEmulation = false, $createEquivalents = true)
     {
-    	$this->equivalents = new ArrayCollection();
-    	$this->buildParameters();
+    	$this->init();
     	
     	if ($command && !is_numeric($command)) {
     		$cmd = ($httpEmulation)?
@@ -348,6 +348,17 @@ class MyfoxCommand
     		// no equivalents for macro
     	}
     }
+
+	public function init()
+	{
+		if ($this->_CMD_PARAMETERS == null) {
+			//
+			$this->buildParameters();
+		}
+		if ($this->equivalents == null) {
+			$this->equivalents = new ArrayCollection();
+		}
+	}
 
     
     /**
@@ -508,7 +519,7 @@ class MyfoxCommand
      */
     public function addEquivalent(\GXApplications\HomeAutomationBundle\Entity\MyfoxCommand $equivalents)
     {
-    	$this->equivalents[] = $equivalents;
+    	$this->equivalents->add($equivalents);
     
     	return $this;
     }
@@ -666,8 +677,9 @@ class MyfoxCommand
     				return false;
     			}
     			$container->get('logger')->info('HttpEmulated response parsed. Set payload value to: '.json_encode($result['payload']));
-    		} catch (Exception $e) {
-    			$container->get('logger')->error('HttpEmulated response parsing error.');
+    		} catch (\Exception $e) {
+    			$container->get('logger')->error('HttpEmulated response parsing error:');
+				$container->get('logger')->error($rawResult);
     			$result['status'] = "KO";
     			$result['error'] = $e->getMessage();
     		}

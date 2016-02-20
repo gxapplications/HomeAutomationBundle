@@ -1,9 +1,9 @@
-<div id="component-{{ component.id }}" flex layout-fill layout-align="center stretch" class="gridlist-card">
+<div id="component-{{ component.id }}" flex layout-fill layout-align="center stretch" {% block card_css %}class="gridlist-card md-whiteframe-6dp"{% endblock %}>
     <div ng-controller="CardCtrl-{{ component.id }} as ctrl" layout="column" layout-fill layout-align="space-around stretch">
-        <div class="handle" layout="row" layout-align="start start" layout-padding ng-show="editMode.show">
-            <md-icon aria-label="grain" class="material-icons md-14">grain</md-icon> <span flex></span>
+        <div class="handle" layout="row" layout-align="start start" layout-padding ng-show="editMode.show" style="height:1.8em;">
+            <md-icon aria-label="grain" class="material-icons md-24">grain</md-icon> <span flex></span>
         </div>
-        <md-fab-toolbar class="handle md-fab-top-right" style="width:100%; top: 0; right: 0" md-direction="left" ng-show="editMode.show">
+        <md-fab-toolbar class="handle md-fab-top-right" style="width:100%; top:0; right:0; height:1.8em;" md-direction="left" ng-show="editMode.show">
             <md-fab-trigger class="align-with-text">
                 <md-button aria-label="Card menu" class="md-fab md-mini md-hue-1 md-ink-ripple">
                     <md-icon aria-label="build" class="material-icons md-14">build</md-icon>
@@ -116,7 +116,7 @@
     ---></div>
 
     <script>
-        app.controllerProvider.register("CardCtrl-{{ component.id }}", function($rootScope, $scope, $interval, $mdDialog) {
+        app.controllerProvider.register("CardCtrl-{{ component.id }}", function($rootScope, $scope, $interval, $mdDialog, $http) {
 
             /* Edit mode and edit menu */
 
