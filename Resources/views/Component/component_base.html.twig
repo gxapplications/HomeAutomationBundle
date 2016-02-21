@@ -197,6 +197,19 @@
                                 }
                             }
                     );
+                },
+            {# TODO !0 : test it ! #}
+                scheduleRefresh: function(delaySeconds, nextIntervals, hue) {
+                    $scope.refresher.interval = delaySeconds;
+                    $scope.refresher.percent = 0;
+                    $scope.refresher.forceIntervals = nextIntervals;
+                    $scope.refresher.hue = hue;
+                    $scope.refresher.timer = $interval(function() {
+                        $scope.refresher.percent += 1;
+                        if ($scope.refresher.percent == 101) {
+                            $scope.refresher.refresh();
+                        }
+                    }, delaySeconds*10, 1, true);
                 }
             };
             {% if refreshInterval > 0 %}

@@ -73,7 +73,8 @@
 							last_action: now
 						}).
 						success(function() {
-							$scope.refresher.refresh();
+							$scope.refresher.scheduleRefresh($scope.component.delay_1, [$scope.component.delay_2], '');
+	{# TODO !0: test it ! #}
 						}).
 						error(function(/*data, status, headers, config*/) {
 							$rootScope.notifications.postError('Scenario Play action error!');
@@ -82,7 +83,8 @@
 						});
 					}
 				} else if ($scope.component.delay_1 > 0) { // delay_1 exists, delayed scenario play action.
-					$scope.refresher.refresh();
+					$scope.refresher.scheduleRefresh($scope.component.delay_1, [], ''
+	{# TODO !0: test it ! #});
 				}
 			}).
 			error(function(/*data, status, headers, config*/) {
@@ -98,10 +100,10 @@
 			var delay2 = $scope.component.delay_2*60;
 			if (lastAction + delay1 > now) {
 				$scope.button.state = 2; // action delayed
-				{# TODO !1: programmer un refresh du component dans "lastAction+delay1" secondes, dans une autre couleur #}
+				{# TODO !1: ou sinon, programmer un refresh du component dans "lastAction+delay1" secondes, dans une autre couleur #}
 			} else if (lastAction + delay1 + delay2 > now) {
 				$scope.button.state = 3; // activated
-				{# TODO !1: programmer un refresh du component dans "lastAction+delay1+delay2" secondes, dans une autre couleur #}
+				{# TODO !1: ou sinon, programmer un refresh du component dans "lastAction+delay1+delay2" secondes, dans une autre couleur #}
 			} else {
 				$scope.button.state = 0; // deactivated
 			}
