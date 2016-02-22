@@ -129,7 +129,7 @@ class ComponentController extends Controller
     	$template = Components::$constTemplates[$component->getType()];
 
 		if ($forceIntervals !== false) {
-			$forceIntervals = explode('-', $forceIntervals);
+			$forceIntervals = is_array($forceIntervals)? $forceIntervals : explode('-', $forceIntervals);
 			$refreshInterval = array_shift($forceIntervals);
 		} else {
 			$refreshInterval = Components::$constRefreshIntervals[$component->getType()];

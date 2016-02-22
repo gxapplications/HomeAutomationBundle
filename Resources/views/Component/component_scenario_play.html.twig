@@ -7,7 +7,7 @@
 {% block html_content %}
 	<md-button class="md-raised md-primary component-button" flex
 			   ng-disabled="{% if component.getForeignId1 is null %}true{% else %}(button.state == 1){% endif %}"
-			   ng-class="{'md-accent': (button.state == 3), 'md-warn': (button.state == 2)}"
+			   ng-class="{'md-hue-3': (button.state == 3), 'md-hue-1': (button.state == 2)}"
 			   ng-click="button.scenarioPlay()">
 		<div layout="row" layout-align="space-around center">
 			<md-icon aria-label="custom" class="material-icons button-icon-48">pan_tool</md-icon>
@@ -24,7 +24,7 @@
 		</div>
 	</md-button>
 {% endblock %}
-
+{# TODO !1: comme il n'y a plus de BG sur la card, la progressbar devrait-elle etre DANS le md-button ? #}
 
 {% block controller_script %}
 	$scope.button = {
@@ -73,18 +73,26 @@
 							last_action: now
 						}).
 						success(function() {
-							$scope.refresher.scheduleRefresh($scope.component.delay_1, [$scope.component.delay_2], '');
-	{# TODO !0: test it ! #}
+							if ($scope.component.delay_1 == 0) {
+								$scope.refresher.scheduleRefresh($scope.component.delay_2*60, false, '');
+							} else {
+								$scope.refresher.scheduleRefresh($scope.component.delay_1*60, $scope.component.delay_2*60, '');
+							}
 						}).
 						error(function(/*data, status, headers, config*/) {
 							$rootScope.notifications.postError('Scenario Play action error!');
 							$scope.button.state = -1;
 							return;
 						});
+					} else {
+						if ($scope.component.delay_1 == 0) {
+							$scope.refresher.scheduleRefresh($scope.component.delay_2*60, false, '');
+						} else {
+							$scope.refresher.scheduleRefresh($scope.component.delay_1*60, $scope.component.delay_2*60, '');
+						}
 					}
 				} else if ($scope.component.delay_1 > 0) { // delay_1 exists, delayed scenario play action.
-					$scope.refresher.scheduleRefresh($scope.component.delay_1, [], ''
-	{# TODO !0: test it ! #});
+					$scope.refresher.scheduleRefresh($scope.component.delay_1*60, false, '');
 				}
 			}).
 			error(function(/*data, status, headers, config*/) {
@@ -100,10 +108,10 @@
 			var delay2 = $scope.component.delay_2*60;
 			if (lastAction + delay1 > now) {
 				$scope.button.state = 2; // action delayed
-				{# TODO !1: ou sinon, programmer un refresh du component dans "lastAction+delay1" secondes, dans une autre couleur #}
+				{# TODO !0: ici aussi, programmer un refresh du component a l'heure "lastAction+delay1" secondes, via $scope.refresher.scheduleRefresh() #}
 			} else if (lastAction + delay1 + delay2 > now) {
 				$scope.button.state = 3; // activated
-				{# TODO !1: ou sinon, programmer un refresh du component dans "lastAction+delay1+delay2" secondes, dans une autre couleur #}
+				{# TODO !0: ici aussi, programmer un refresh du component a l'heure "lastAction+delay1+delay2" secondes, via $scope.refresher.scheduleRefresh() #}
 			} else {
 				$scope.button.state = 0; // deactivated
 			}

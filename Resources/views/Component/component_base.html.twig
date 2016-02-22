@@ -138,12 +138,13 @@
                     scope: $scope,        // use parent scope in template
                     preserveScope: true,  // do not forget this if use parent scope
                     onRemoving: function() {
-                        $scope.refresher.refresh();
+                        //$scope.refresher.refresh();
                     },
                     template: content,
                     controller: function($scope, $mdDialog) {
                         $scope.cancelConfig = function() {
                             $mdDialog.hide();
+                            $scope.refresher.refresh();
                         };
                         $scope.saveConfig = function() {
                             $mdDialog.hide();
@@ -152,8 +153,10 @@
                                 { 'component': $scope.component }
                             ).done(function() {
                                 $rootScope.notifications.postSuccess('Component configuration saved!');
+                                $scope.refresher.refresh();
                             }).fail(function() {
                                 $rootScope.notifications.postError('Component configuration error!');
+                                $scope.refresher.refresh();
                             });
                         };
                         {% block configure_controller_script %}
@@ -198,7 +201,6 @@
                             }
                     );
                 },
-            {# TODO !0 : test it ! #}
                 scheduleRefresh: function(delaySeconds, nextIntervals, hue) {
                     $scope.refresher.interval = delaySeconds;
                     $scope.refresher.percent = 0;
@@ -209,7 +211,7 @@
                         if ($scope.refresher.percent == 101) {
                             $scope.refresher.refresh();
                         }
-                    }, delaySeconds*10, 1, true);
+                    }, delaySeconds*10, 0, true);
                 }
             };
             {% if refreshInterval > 0 %}
