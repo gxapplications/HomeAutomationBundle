@@ -2,7 +2,7 @@
 
 
 {% block card_css %}ng-class="{'gridlist-card md-whiteframe-6dp': editMode.show}"{% endblock %}
-
+{% block card_progress_bar %}{% endblock %}
 
 {% block html_content %}
 	<md-button class="md-raised md-primary component-button" flex
@@ -20,11 +20,15 @@
 						{{ component.description }}
 					</div>
 				{% endif %}
+
 			</div>
+		</div>
+		<div class="card-progress-linears" style="position:absolute; bottom:0; left:0; right:0">
+			<md-progress-linear md-mode="determinate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-class="{'md-hue-2': (button.state == 0), 'md-hue-3': (button.state == 2)}" ng-show="refresher.percent<=100" value="{{ '{{ ' }}refresher.percent{{ '}}' }}"></md-progress-linear>
+			<md-progress-linear md-mode="indeterminate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-class="{'md-hue-2': (button.state == 0), 'md-hue-3': (button.state == 2)}" ng-hide="refresher.percent<=100"></md-progress-linear>
 		</div>
 	</md-button>
 {% endblock %}
-{# TODO !1: comme il n'y a plus de BG sur la card, la progressbar devrait-elle etre DANS le md-button ? #}
 
 {% block controller_script %}
 	$scope.button = {
@@ -108,10 +112,10 @@
 			var delay2 = $scope.component.delay_2*60;
 			if (lastAction + delay1 > now) {
 				$scope.button.state = 2; // action delayed
-				{# TODO !0: ici aussi, programmer un refresh du component a l'heure "lastAction+delay1" secondes, via $scope.refresher.scheduleRefresh() #}
+				$scope.refresher.scheduleRefresh(lastAction + delay1 - now, false, '');
 			} else if (lastAction + delay1 + delay2 > now) {
 				$scope.button.state = 3; // activated
-				{# TODO !0: ici aussi, programmer un refresh du component a l'heure "lastAction+delay1+delay2" secondes, via $scope.refresher.scheduleRefresh() #}
+				$scope.refresher.scheduleRefresh(lastAction + delay1 + delay2 - now, false, '');
 			} else {
 				$scope.button.state = 0; // deactivated
 			}
@@ -173,7 +177,7 @@
 					</md-radio-group>
 				</md-list-item>
 				<md-list-item layout="column" style="padding-top: 1em;">
-					<md-input-container flex layout-fill layout-align="center start" ng-show="component.option_1==='1'">
+					<md-input-container flex layout-fill layout-align="center start" ng-show="component.option_1=='1'">
 						<label>Active state duration (in minutes)</label>
 						<input required type="number" step="any" name="component_delay_2" ng-model="component.delay_2" min="1" max="1440" required>
 						<div ng-messages="componentForm.component_delay_2.$error">
@@ -182,7 +186,7 @@
 							<div ng-message="max">1440 minutes max. Equivalent to 24hrs.</div>
 						</div>
 					</md-input-container>
-					<div flex ng-show="component.option_1==='2'" layout="row" layout-fill layout-align="center start">
+					<div flex ng-show="component.option_1=='2'" layout="row" layout-fill layout-align="center start">
 						<md-input-container flex>
 							<label>Wait to play second scenario (in minutes)</label>
 							<input required type="number" step="any" name="component_delay_2" ng-model="component.delay_2" min="1" max="1440" required>

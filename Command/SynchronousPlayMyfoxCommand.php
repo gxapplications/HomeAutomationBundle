@@ -34,4 +34,6 @@ class SynchronousPlayMyfoxCommand extends ContainerAwareCommand
 	}
 }
 
-// TODO !6 : ajouter une autre command pour authentifier le token (avec un login et password en arguments)
+// TODO !106 : ajouter une autre command pour authentifier le token (avec un login et password en arguments)
+// Idée A tester dans la durée : il faut qu'on ait fait sauter la session par timeout et que la commande s'exécute après.
+

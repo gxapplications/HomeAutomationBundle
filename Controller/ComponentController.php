@@ -144,8 +144,6 @@ class ComponentController extends Controller
 			)
     	);
 
-		// TODO !4: surcharger le tpl par type de component (ComponentController, L.185)
-
 		return new Response($content);
     }
 

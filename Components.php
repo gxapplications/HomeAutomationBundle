@@ -24,7 +24,7 @@ class Components
 	public static $constPreferredSizes = array(
 		0 => ['w' => 1, 'h' => 1],
 		1 => ['w' => 1, 'h' => 1],
-		2 => ['w' => 1, 'h' => 1],
+		2 => ['w' => 2, 'h' => 1],
 		3 => ['w' => 1, 'h' => 1],
 		4 => ['w' => 1, 'h' => 1],
 		5 => ['w' => 2, 'h' => 1],

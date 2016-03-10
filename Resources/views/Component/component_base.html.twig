@@ -82,10 +82,12 @@
                 -{{ component.id }}-
             {% endblock %}
         </div>
-        <div class="card-progress-linears">
-            <md-progress-linear md-mode="determinate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-show="refresher.percent<=100" value="{{ '{{ ' }}refresher.percent{{ '}}' }}"></md-progress-linear>
-            <md-progress-linear md-mode="indeterminate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-hide="refresher.percent<=100"></md-progress-linear>
-        </div>
+        {% block card_progress_bar %}
+            <div class="card-progress-linears">
+                <md-progress-linear md-mode="determinate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-show="refresher.percent<=100" value="{{ '{{ ' }}refresher.percent{{ '}}' }}"></md-progress-linear>
+                <md-progress-linear md-mode="indeterminate" class="{{ '{{' }}refresher.hue{{ '}}' }}" ng-hide="refresher.percent<=100"></md-progress-linear>
+            </div>
+        {% endblock %}
 
     </div>
 
@@ -202,6 +204,9 @@
                     );
                 },
                 scheduleRefresh: function(delaySeconds, nextIntervals, hue) {
+                    if ($scope.refresher.timer != null) {
+                        $interval.cancel($scope.refresher.timer);
+                    }
                     $scope.refresher.interval = delaySeconds;
                     $scope.refresher.percent = 0;
                     $scope.refresher.forceIntervals = nextIntervals;

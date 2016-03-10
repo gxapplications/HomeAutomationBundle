@@ -79,25 +79,3 @@ div.gridlist-card div.handle, div.gridlist-card div.md-fab-toolbar-content {
 div.card-progress-linears md-progress-linear .md-container {
 	background-color: transparent;
 }
-
-
-/* FIXME !0: d'ici, voir si on en a encore besoin... */
-md-card.lighter {
-	background-color: #90A4AE; /* Blue grey 300 */
-	padding: 0.4em;
-}
-md-dialog.lighter, md-content.lighter, md-dialog.lighter md-content {
-	background-color: #90A4AE; /* Blue grey 300 */
-}
-
-md-content.page-layout {
-	padding: 1em;
-	overflow: auto;
-	height: 10px; /* means nothing, but not auto! */
-	margin-bottom: -50px;
-	background-color: #607D8B; /* Blue grey 500 */
-}
-md-content.page-layout > div {
-	overflow: visible;
-	margin-bottom: 50px;
-}
