@@ -12,7 +12,6 @@ use JMS\SecurityExtraBundle\Annotation\Secure;
 
 use GXApplications\HomeAutomationBundle\Entity\Home;
 use GXApplications\HomeAutomationBundle\Entity\Page;
-use GXApplications\HomeAutomationBundle\Layouts;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use GXApplications\HomeAutomationBundle\Entity\Account;

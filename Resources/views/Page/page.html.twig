@@ -35,7 +35,7 @@
 	{% endjavascripts %}
 	<script>
 		var gridStack = null, init, matrix;
-		var loaderUrl = '{{ path("_component_show_get") }}';
+		var loaderUrl = '{{ path("_component_show_get", {'homeKey': home.getHomeKey()}) }}';
 		var app = angular.module('GXHomeAutomationApp', ['ngMaterial', 'ngMessages'])
 
 		app
@@ -125,6 +125,7 @@
 				home_key: "{{ home.getHomeKey }}",
 				scenarii: null,
 				onDemandScenarii: null,
+				notOnDemandScenarii: null,
 				loadScenarii: function() {
 					if ($rootScope.myfox.scenarii === null) {
 						var url = "{{ path("_get_sync_myfox") }}";
@@ -136,11 +137,14 @@
 							if (data['status'] == 'OK') {
 								$rootScope.myfox.scenarii = [];
 								$rootScope.myfox.onDemandScenarii = [];
+								$rootScope.myfox.notOnDemandScenarii = [];
 								for (var i = 0; i< data['payload']['items'].length; i++) {
 									var item = data['payload']['items'][i];
 									$rootScope.myfox.scenarii.push(item);
 									if (item['typeLabel'] == 'onDemand') {
 										$rootScope.myfox.onDemandScenarii.push(item);
+									} else {
+										$rootScope.myfox.notOnDemandScenarii.push(item);
 									}
 								}
 							}

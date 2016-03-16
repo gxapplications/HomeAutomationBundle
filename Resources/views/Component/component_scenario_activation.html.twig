@@ -2,11 +2,11 @@
 
 
 {% block html_content %}
-	<md-button class="md-raised component-button" flex
+	<md-button class="md-raised md-primary component-button" flex
 			ng-disabled="{% if component.getForeignId1 is null %}true{% else %}(button1.state == 1){% endif %}"
-			layout="row" layout-align="start center" ng-class="{'md-primary': (button1.state == 2), 'md-accent' : (button1.state == 3)}"
+			ng-class="{'md-hue-3': (button1.state == 3), 'md-hue-1': (button1.state == 2)}"
 			ng-click="button1.scenarioActivation()"
-			style="{% if component.getForeignId2 is not empty and (component.getOption1 > 0) %}border-top-right-radius:inherit; border-bottom-right-radius:inherit;{% endif %}margin:1px;">
+			style="{% if component.getForeignId2 is not empty and (component.getOption1 > 0) %}border-top-right-radius:inherit; border-bottom-right-radius:inherit;margin-right:1px;{% endif %}">
 		<div layout="row" layout-align="space-around center">
 			<md-icon aria-label="custom" class="material-icons button-icon-48">pan_tool</md-icon>
 			<div layout="column">
@@ -18,7 +18,6 @@
 						{{ component.description }}
 					</div>
 				{% endif %}
-
 			</div>
 		</div>
 	</md-button>
@@ -95,19 +94,18 @@
 	$scope.button1 = {
 		state: 1,
 		scenarioActivation: function() {
-	{# TODO !4 #}
+			{# TODO !4 #}
 		},
 		initState: function() {
 			var now = Date.now()/1000;
 			var lastAction = $scope.component.last_action;
 			var delay1 = $scope.component.delay_1*60;
-			var delay2 = $scope.component.delay_2*60;
 			if (lastAction + delay1 > now) {
-	{# TODO !3 #}
-			} else if (lastAction + delay1 + delay2 > now) {
-	{# TODO !3 #}
+				$scope.button1.state = 2; // action delayed
+				$scope.refresher.scheduleRefresh(lastAction + delay1 - now, false, '');
+				{# TODO !3 : tester. Comportement si radio mode (button[1,2,3,4] sont liés) est ON ? Second point : faire ceci pour le 1er et pas les autres ? #}
 			} else {
-	{# TODO !3 #}
+				$scope.button1.state = {% if state.1 %}3{% else %}0{% endif %}; // deactivated
 			}
 		}
 	};
@@ -116,5 +114,165 @@
 
 
 {% block configure_html_content %}
-	{# TODO !1: reprendre depuis le vieux tpl et le remettre a jour. #}
+	<form name="componentForm" layout="column" flex layout-fill>
+		<section>
+			<md-subheader class="md-accent">Scenario Activation</md-subheader>
+			<md-list layout="column" layout-padding>
+				<md-list-item>
+					<md-input-container flex>
+						<label>Title</label>
+						<input ng-model="component.title" required name="component_title" md-maxlength="98" />
+					</md-input-container>
+				</md-list-item>
+				<md-list-item>
+					<md-input-container flex>
+						<label>{# TODO !108: icon support #}</label>
+					</md-input-container>
+				</md-list-item>
+				<md-list-item>
+					<md-input-container flex>
+						<label>Description</label>
+						<textarea ng-model="component.description" columns="1" md-maxlength="482"></textarea>
+					</md-input-container>
+				</md-list-item>
+				<md-list-item>
+					<md-select placeholder="Scenario linked" ng-model="component.foreign_id_1" md-on-open="myfox.loadScenarii()" flex>
+						<md-option ng-value="scenario.scenarioId" ng-repeat="scenario in myfox.notOnDemandScenarii">{{ '{{' }}scenario.label{{ '}}' }}</md-option>
+					</md-select>
+				</md-list-item>
+				<md-list-item>
+					<md-input-container flex>
+						<label>Delayed play action (in minutes)</label>
+						<input required type="number" step="any" name="component_delay" ng-model="component.delay_1" min="0" max="1440" required>
+						<div ng-messages="componentForm.component_delay.$error">
+							<div ng-message="required">If you want immediate play action, please indicate 0.</div>
+							<div ng-message="min">Impossible to go back in time, Marty!</div>
+							<div ng-message="max">1440 minutes max. Equivalent to 24hrs.</div>
+						</div>
+					</md-input-container>
+				</md-list-item>
+			</md-list>
+		</section>
+		<md-divider></md-divider>
+		<section>
+			<md-subheader class="md-accent">Options</md-subheader>
+
+
+			{# TODO !1: reprendre depuis le vieux tpl et le remettre a jour. #}
+								{#<div layout="row" layout-align="start center">
+									<md-input-container flex class="very_long">
+										<label>Title #2</label>
+										<input ng-model="component.title_2" name="component_title_2" md-maxlength="98"
+											   ng-init="component.title_2='{{ component.title2|replace({'\'':'\\\''}) }}'" />
+									</md-input-container>
+									<div>
+										TODO !108: icon support
+									</div>
+								</div>
+								<div layout="row" layout-align="start center">
+									<md-input-container flex class="very_long">
+										<label>Description #2</label>
+										<input ng-model="component.description_2" md-maxlength="98"
+											   ng-init="component.description_2='{{ component.description2|replace({'\'':'\\\''}) }}'" />
+									</md-input-container>
+									<div>
+										<label>Linked to scenario: </label><br/>
+										<select id="edit_scenario_activation_{{ component.id }}_scenario_id_2" ng-model="component.scenario_id_2"
+												ng-init="component.scenario_id_2='{{ component.getForeignId2 }}'" label="Scenario #2">
+											{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+												<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>#}
+
+		</section>
+		<section>
+			<md-subheader class="md-accent">??</md-subheader>
+
+
+			{# TODO !1: reprendre depuis le vieux tpl et le remettre a jour. #}
+								{#<div layout="row" layout-align="start center">
+									<md-input-container flex class="very_long">
+										<label>Title #3</label>
+										<input ng-model="component.title_3" name="component_title_3" md-maxlength="98"
+											   ng-init="component.title_3='{{ component.title3|replace({'\'':'\\\''}) }}'" />
+									</md-input-container>
+									<div>
+										TODO !108: icon support
+									</div>
+								</div>
+								<div layout="row" layout-align="start center">
+									<md-input-container flex class="very_long">
+										<label>Description #3</label>
+										<input ng-model="component.description_3" md-maxlength="98"
+											   ng-init="component.description_3='{{ component.description2|replace({'\'':'\\\''}) }}'" />
+									</md-input-container>
+									<div>
+										<label>Linked to scenario: </label><br/>
+										<select id="edit_scenario_activation_{{ component.id }}_scenario_id_3" ng-model="component.scenario_id_3"
+												ng-init="component.scenario_id_3='{{ component.getForeignId3 }}'" label="Scenario #3">
+											{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+												<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>#}
+
+		</section>
+		<section>
+			<md-subheader class="md-accent">??</md-subheader>
+
+
+			{# TODO !1: reprendre depuis le vieux tpl et le remettre a jour. #}
+								{#<div layout="row" layout-align="start center">
+									<md-input-container flex class="very_long">
+										<label>Title #4</label>
+										<input ng-model="component.title_4" name="component_title_4" md-maxlength="98"
+											   ng-init="component.title_4='{{ component.title4|replace({'\'':'\\\''}) }}'" />
+									</md-input-container>
+									<div>
+										TODO !108: icon support
+									</div>
+								</div>
+								<div layout="row" layout-align="start center">
+									<md-input-container flex class="very_long">
+										<label>Description #4</label>
+										<input ng-model="component.description_4" md-maxlength="98"
+											   ng-init="component.description_4='{{ component.description4|replace({'\'':'\\\''}) }}'" />
+									</md-input-container>
+									<div>
+										<label>Linked to scenario: </label><br/>
+										<select id="edit_scenario_activation_{{ component.id }}_scenario_id_4" ng-model="component.scenario_id_4"
+												ng-init="component.scenario_id_4='{{ component.getForeignId4 }}'" label="Scenario #4">
+											{% for scenario in scenario_list if scenario.typeLabel != 'onDemand' %}
+												<option value="{{ scenario.scenarioId }}">{{ scenario.label }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>#}
+
+		</section>
+		<md-divider></md-divider>
+		<section>
+			<md-subheader class="md-warn">Behavior</md-subheader>
+			<md-list layout="column" layout-padding>
+				<md-list-item>
+					<md-radio-group ng-model="component.option_1">
+						<md-radio-button value="0">Scenarii are independent.</md-radio-button>
+						<md-radio-button value="1">Exactly one scenario must be activated on the same time.</md-radio-button>
+						<md-radio-button value="2">At most one scenario can be activated on the same time.</md-radio-button>
+					</md-radio-group>
+				</md-list-item>
+			</md-list>
+		</section>
+		<md-divider></md-divider>
+		<section>
+			<md-subheader class="md-accent">TODO !109</md-subheader>
+
+			{# TODO !109: Balance inverse apres Y minutes #}
+
+		</section>
+	</form>
+
 {% endblock %}

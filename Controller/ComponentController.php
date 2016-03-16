@@ -9,9 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 use GXApplications\HomeAutomationBundle\Entity\Page;
-use GXApplications\HomeAutomationBundle\Entity\Container;
 use GXApplications\HomeAutomationBundle\Entity\Component;
-use GXApplications\HomeAutomationBundle\Layouts;
 use GXApplications\HomeAutomationBundle\Components;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -120,11 +118,11 @@ class ComponentController extends Controller
     }
     
     /**
-     * @Route("/showComponent/{component_id}/{forceIntervals}", name="_component_show",  requirements={"component_id" = "\d*"})
+     * @Route("/showComponent/{component_id}/{homeKey}/{forceIntervals}", name="_component_show",  requirements={"component_id" = "\d*"})
      * @Method({"GET"})
      * @ParamConverter ("component", class="GXHomeAutomationBundle:Component", options={"id" = "component_id"})
      */
-    public function showAction(Component $component, $forceIntervals = false)
+    public function showAction(Component $component, $homeKey = false, $forceIntervals = false)
     {
     	$template = Components::$constTemplates[$component->getType()];
 
@@ -135,12 +133,48 @@ class ComponentController extends Controller
 			$refreshInterval = Components::$constRefreshIntervals[$component->getType()];
 		}
 
+		$state = array();
+		switch ($component->getType()) {
+			case 2: // 'Scenario - Activation'
+				$scenarioId1 = $component->getForeignId1();
+				$scenarioId2 = $component->getForeignId2();
+				$scenarioId3 = $component->getForeignId3();
+				$scenarioId4 = $component->getForeignId4();
+				if ($scenarioId1 && $homeKey) {
+					/* @var $myfox MyfoxService */
+					$myfox = $this->get('gx_home_automation.myfox');
+					$res = $myfox->playSync($homeKey, MyfoxCommand::CMD_GET_SCENARIO_ITEMS, array(), true, true);
+					try {
+						foreach (json_decode($res, true)['payload']['items'] as $item) {
+							switch ($item['scenarioId']) {
+								case $scenarioId1:
+									$state[1] = $item['enabled'];
+									break;
+								case $scenarioId2:
+									$state[2] = $item['enabled'];
+									break;
+								case $scenarioId3:
+									$state[3] = $item['enabled'];
+									break;
+								case $scenarioId4:
+									$state[4] = $item['enabled'];
+									break;
+							}
+						}
+					} catch (\Exception $e) {
+						// TODO !1: show an error: cannot retrieve scenario state from myfox
+					}
+				}
+				break;
+		}
+
     	$content = $this->renderView(
 			$template,
 			array(
 				'component' => $component,
 				'refreshInterval' => $refreshInterval,
 				'forceIntervals' => ($forceIntervals !== false)? json_encode($forceIntervals) : 'false',
+				'state' => $state
 			)
     	);
 
@@ -148,10 +182,10 @@ class ComponentController extends Controller
     }
 
 	/**
-	 * @Route("/showComponent/", name="_component_show_get")
+	 * @Route("/showComponent/{homeKey}", name="_component_show_get")
 	 * @Method({"GET","POST"})
 	 */
-	public function showGetAction(Request $request)
+	public function showGetAction(Request $request, $homeKey = false)
 	{
 		$componentId = $request->get('component_id', $request->get('id', null));
 		if ($componentId == null) {
@@ -166,7 +200,7 @@ class ComponentController extends Controller
 
 		$forceIntervals = $request->get('force_intervals', $request->get('forceIntervals', false));
 
-		return $this->showAction($component, $forceIntervals);
+		return $this->showAction($component, $homeKey, $forceIntervals);
 	}
     			
 }			
